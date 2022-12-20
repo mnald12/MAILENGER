@@ -1,25 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import './App.css'
+import Login from './components/Login'
+import { GoogleOAuthProvider } from '@react-oauth/google'
+import React from 'react'
+import { useState } from 'react'
+
+const ModeContext = React.createContext(null)
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+   // eslint-disable-next-line no-unused-vars
+   const [isLogIn, setLogin] = useState(false)
+   const [credentials, setCredentials] = useState(null)
+
+   return (
+      <GoogleOAuthProvider clientId="430037630460-8u0dbl0gpl1r4vttum7hi1ro7ckkub98.apps.googleusercontent.com">
+         <ModeContext.Provider
+            value={[isLogIn, setLogin, credentials, setCredentials]}
+         >
+            <Login />
+         </ModeContext.Provider>
+      </GoogleOAuthProvider>
+   )
 }
 
-export default App;
+export { ModeContext }
+
+export default App

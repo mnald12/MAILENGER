@@ -1,0 +1,52 @@
+.container {
+   width: 90%;
+   min-height: 500px;
+   height: auto;
+   margin: 20px 5%;
+   padding: 20px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 12px;
+   flex-wrap: wrap;
+}
+.welcomeContainer {
+   width: 50%;
+   height: auto;
+   padding: 20px;
+}
+h2 {
+   font-size: 36px;
+   font-weight: 600;
+}
+h1 {
+   font-size: 50px;
+   font-weight: 800;
+   font-family: cursive;
+   transition: 1s;
+   background: linear-gradient(
+      176deg,
+      #7fb7f2 5%,
+      #5119fb 34%,
+      #6a6113 78%,
+      #b40434 93%
+   );
+   -webkit-background-clip: text;
+   -webkit-text-fill-color: transparent;
+}
+.formContainer {
+   width: auto;
+   height: auto;
+   border-radius: 8px;
+   padding: 16px;
+   text-align: center;
+   box-shadow: 0 4px 8px grey;
+}
+img {
+   width: auto;
+   height: 100px;
+   margin: 30px auto;
+}
+.login {
+   margin: 0 auto;
+}
