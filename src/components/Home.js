@@ -1,12 +1,12 @@
+import '../css/Home.css'
 import { useContext } from 'react'
 import { ModeContext } from '../App'
 import { googleLogout } from '@react-oauth/google'
-// import gmailApi from 'react-gmail'
-// import { TokenClientConfig } from '@react-oauth/google'
-// import { authenticate } from '@google-cloud/local-auth'
+import Sidebar from './Sidebar'
+import Content from './Content'
 
 const Home = () => {
-   const [, setLogin, credentials] = useContext(ModeContext)
+   const [, setLogin, userData] = useContext(ModeContext)
 
    const logout = () => {
       googleLogout()
@@ -14,16 +14,20 @@ const Home = () => {
       setLogin(false)
    }
 
-   //const [state, setState] = useState(null)
-
-   // gmailApi.getMessages(true, 5).then((res) => {
-   //    setState({ messages: gmailApi.normalizeData(res) })
-   // })
+   const sideData = {
+      id: userData.sub,
+      avatar: userData.picture,
+      name: userData.name,
+      email: userData.email,
+      logout,
+   }
 
    return (
       <>
-         <p>{credentials.credential}</p>
-         <button onClick={logout}>logout</button>
+         <div className="container">
+            <Sidebar data={sideData} />
+            <Content />
+         </div>
       </>
    )
 }

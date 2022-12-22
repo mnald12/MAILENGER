@@ -1,6 +1,6 @@
 .container {
    width: 90%;
-   min-height: 500px;
+   min-height: 100%;
    height: auto;
    margin: 20px 5%;
    padding: 20px;
@@ -15,22 +15,21 @@
    height: auto;
    padding: 20px;
 }
-h2 {
-   font-size: 36px;
-   font-weight: 600;
-}
-h1 {
+.welcome {
    font-size: 50px;
    font-weight: 800;
    font-family: cursive;
    transition: 1s;
-   background: linear-gradient(
-      176deg,
-      #7fb7f2 5%,
-      #5119fb 34%,
-      #6a6113 78%,
-      #b40434 93%
+   background: radial-gradient(
+      circle farthest-side at top left,
+      #650fc0 7%,
+      #323c33 45%,
+      #75492a 51%,
+      #762220 55%,
+      #525a7c 89%,
+      #f35d60 95%
    );
+   background-clip: text;
    -webkit-background-clip: text;
    -webkit-text-fill-color: transparent;
 }
@@ -49,4 +48,9 @@ img {
 }
 .login {
    margin: 0 auto;
+}
+.mailenger {
+   width: 400px;
+   height: 400px;
+   margin: 10px auto;
 }

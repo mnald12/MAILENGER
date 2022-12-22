@@ -2,18 +2,21 @@
 import gmail from '../images/Gmail-logo.png'
 import Home from './Home'
 import '../css/Login.css'
-import { GoogleLogin } from '@react-oauth/google'
 import { useContext, useState } from 'react'
 import { ModeContext } from '../App'
+import { GoogleLoginButton } from 'react-social-login-buttons'
+import { LoginSocialGoogle } from 'reactjs-social-login'
 
 const intros = [
-   'A smarter Inbox',
    'Not just an Email!',
+   'Turn your Email into Chat',
+   'A smarter Inbox',
    'Chat with anyone, anywhere',
+   'Real time chat, real time results',
 ]
 
 const Login = () => {
-   const [isLogIn, setLogin, , setCredentials] = useContext(ModeContext)
+   const [isLogIn, setLogin, , setUserData] = useContext(ModeContext)
    const [intro, setIntro] = useState(intros[0].message)
 
    window.setTimeout(() => {
@@ -26,22 +29,29 @@ const Login = () => {
       return (
          <div className="container">
             <div className="welcomeContainer">
-               <h1>Welcome to MAILENGER!</h1>
-               <br></br>
-               <h2>{intro}</h2>
+               <div className="welcome">
+                  <h2>MAILENGER</h2>
+                  <p>{intro}</p>
+               </div>
             </div>
             <div className="formContainer">
                <img src={gmail}></img>
-               <GoogleLogin
-                  onSuccess={(credentialResponse) => {
+               <LoginSocialGoogle
+                  client_id="430037630460-8u0dbl0gpl1r4vttum7hi1ro7ckkub98.apps.googleusercontent.com"
+                  scope="https://mail.google.com"
+                  discoveryDocs="claims_supported"
+                  access_type="offline"
+                  onResolve={({ data }) => {
+                     console.log(data)
                      setLogin(true)
-                     setCredentials(credentialResponse)
-                     console.log(credentialResponse)
+                     setUserData(data)
                   }}
-                  onError={() => {
-                     console.log('Login Failed')
+                  onReject={(err) => {
+                     console.log(err)
                   }}
-               />
+               >
+                  <GoogleLoginButton value={'Log in with Gmail'} />
+               </LoginSocialGoogle>
             </div>
          </div>
       )
