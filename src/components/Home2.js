@@ -4,70 +4,57 @@ import { useContext } from 'react'
 import { ModeContext } from '../App'
 import { googleLogout } from '@react-oauth/google'
 import { useEffect, useState } from 'react'
-import getMessages from '../methods/getMess'
 import Content from './Content'
 import Avatar from 'react-avatar'
 
-let message = null
-
-const setActive = (id) => {
-   for (let i = 0; i < message.length; i++) {
-      if (i === id) {
-         document.getElementById(id).classList.add('active')
-      } else {
-         document.getElementById(i).classList.remove('active')
-      }
-   }
-}
-
-const Home = () => {
-   const [, setLogin, userData] = useContext(ModeContext)
+const Home2 = ({ data }) => {
+   const [messages, setMessages] = useState()
+   const [, setLogin] = useContext(ModeContext)
 
    const logout = () => {
       googleLogout()
       sessionStorage.clear()
       setLogin(false)
    }
-
-   const data = {
-      id: userData.sub,
-      avatar: userData.picture,
-      name: userData.name,
-      email: userData.email,
-      token: userData.access_token,
-   }
-
-   const [messages, setMessages] = useState(null)
-
+   console.log(data)
    useEffect(() => {
-      fetch(`https://gmail.googleapis.com/gmail/v1/users/${data.id}/threads`, {
-         method: 'get',
-         headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + data.token,
-            Host: 'https://mail.google.com',
-         },
-      })
-         .then((response) => response.json())
-         .then(setMessages)
-         .catch(console.error)
-   }, [data.id, data.token])
-
-   useEffect(() => {
-      if (messages) {
-         const datas = {
-            id: data.id,
-            token: data.token,
-         }
-         message = getMessages(messages.threads, datas)
-         console.log(message)
+      let options = {
+         method: 'GET',
       }
-   }, [data.id, data.token, messages])
+      fetch(
+         `/users2/${data.email}/${data.pwd}/${data.host}/${data.port}`,
+         options
+      )
+         .then((response) => response.json())
+         .then((res) => {
+            console.log(res)
+            let cf = res.length
+            let c = 0
+
+            let messs = []
+
+            for (let i of res) {
+               let f = i.from[0].split('<')
+               let data = {
+                  from: f[0],
+                  date: i.date[0],
+                  sub: i.subject[0],
+                  to: i.to[0],
+               }
+               messs.push(data)
+               c++
+            }
+
+            if (c === cf) {
+               setMessages(messs)
+            }
+         })
+         .catch(console.error)
+   }, [data.email, data.host, data.port, data.pwd])
 
    const [mode, setMode] = useState({ mode: 'welcome' })
 
-   if (message) {
+   if (messages) {
       return (
          <>
             <div className="container">
@@ -91,21 +78,16 @@ const Home = () => {
                   </div>
 
                   <div className="side-contents">
-                     {message.map((mess, id) => (
+                     {messages.map((mess) => (
                         <button
-                           id={id}
-                           onClick={() => {
+                           onClick={() =>
                               setMode({
-                                 mode: 'message',
-                                 id: data.id,
-                                 mId: mess.id,
-                                 token: data.token,
+                                 mode: 'message2',
                               })
-                              setActive(id)
-                           }}
-                           title={mess.subject}
+                           }
+                           title={mess.date}
                            className="message-list"
-                           key={id}
+                           key={mess.id}
                         >
                            <div className="avtr">
                               <Avatar
@@ -114,11 +96,9 @@ const Home = () => {
                                  round={true}
                               />
                            </div>
-
                            <div className="message-info">
-                              <h4 className="name">{mess.from[0]}</h4>
-                              <p className="subject">{mess.subject}</p>
-                              <p className="snippet">{mess.message}</p>
+                              <h4 className="name">{mess.from}</h4>
+                              <p className="snippet">{mess.sub}</p>
                            </div>
                         </button>
                      ))}
@@ -223,4 +203,4 @@ const Home = () => {
    }
 }
 
-export default Home
+export default Home2

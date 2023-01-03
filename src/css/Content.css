@@ -1,9 +1,6 @@
 .main-content {
-   width: 100%;
-   max-width: 69%;
+   width: 68%;
    height: 100%;
-   position: absolute;
-   right: 0;
-   top: 0;
+   overflow: auto;
    padding: 12px;
 }
