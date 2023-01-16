@@ -1,0 +1,9 @@
+.call-modal {
+   width: 100%;
+   height: 600px;
+   border: 1px solid green;
+   display: none;
+   position: absolute;
+   left: 0;
+   top: 0;
+}

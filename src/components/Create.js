@@ -1,33 +1,39 @@
 import '../css/Create.css'
-import { useState } from 'react'
-
-const sendMail = (data) => {
-   console.log(data)
-   console.log(document.getElementById('messageBox').innerText)
-   fetch(
-      `https://gmail.googleapis.com/gmail/v1/users/${data.id}/messages/send`,
-      {
-         method: 'post',
-         headers: {
-            Authorization: 'Bearer ' + data.token,
-            ContentType: 'message/rfc822',
-         },
-         body: {
-            From: '<' + data.from + '>',
-            To: '<' + data.to + '>',
-            Subject: data.subject,
-            Text: document.getElementById('messageBox').innerText,
-         },
-      }
-   )
-      .then((res) => res.json())
-      .then((res) => console.log(res))
-      .catch(console.error)
-}
+import { useState, useRef } from 'react'
+import { Editor } from '@tinymce/tinymce-react'
 
 const Create = ({ data }) => {
    const [to, setTo] = useState('')
    const [subject, setSubject] = useState('')
+   const [key, setKey] = useState(1)
+   const editorRef = useRef(null)
+
+   const sendMail = () => {
+      if (editorRef.current) {
+         let options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+               from: data.email,
+               to: to,
+               subject: subject,
+               text: '',
+               html: editorRef.current.getContent(),
+               token: data.token,
+            }),
+         }
+         fetch('/send', options)
+            .then((res) => {
+               setTo('')
+               setSubject('')
+               setKey(key + 1)
+               editorRef.current.value = null
+               console.log(res)
+            })
+            .catch((err) => console.log(err))
+      }
+   }
+
    return (
       <>
          <div className="create-form">
@@ -46,25 +52,50 @@ const Create = ({ data }) => {
                placeholder="Subject: "
             ></input>
          </div>
+         <br></br>
          <div className="create-form">
-            <br></br>
-            <p className="label">Your message: </p>
-            <div id="messageBox" className="textBox" contentEditable></div>
-            <button
-               onClick={() =>
-                  sendMail({
-                     id: data.id,
-                     token: data.token,
-                     from: data.email,
-                     to: to,
-                     subject: subject,
-                  })
-               }
-               className="sendButton"
-            >
+            <Editor
+               key={key}
+               className="editor"
+               apiKey="2e4rt61pepx5xgo2mchhc3x9edy93wooey5syeecpk4trzor"
+               onInit={(evt, editor) => (editorRef.current = editor)}
+               init={{
+                  height: 380,
+                  menubar: true,
+                  plugins: [
+                     'advlist autolink lists link image charmap print preview anchor',
+                     'searchreplace visualblocks code fullscreen',
+                     'insertdatetime media table paste code help wordcount',
+                     'image',
+                     'table',
+                  ],
+                  toolbar:
+                     'undo redo | formatselect | ' +
+                     'bold italic backcolor | alignleft aligncenter ' +
+                     'alignright alignjustify | bullist numlist outdent indent | ' +
+                     'removeformat | help' +
+                     'image' +
+                     'table tabledelete | tableprops tablerowprops tablecellprops | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
+                  content_style:
+                     'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+               }}
+            />
+            <br />
+            <button className="sendButton" onClick={sendMail}>
+               <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  className="bi bi-send-fill"
+                  viewBox="0 0 16 16"
+               >
+                  <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
+               </svg>
                Send
             </button>
          </div>
+
          <div className="space"></div>
       </>
    )

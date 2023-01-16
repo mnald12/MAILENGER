@@ -8,7 +8,9 @@ import getMessages from '../methods/getMess'
 import Content from './Content'
 import Avatar from 'react-avatar'
 
+let msgs = []
 let message = null
+let sentMess = null
 
 const setActive = (id) => {
    for (let i = 0; i < message.length; i++) {
@@ -20,8 +22,21 @@ const setActive = (id) => {
    }
 }
 
+const setNavActive = (id) => {
+   const selections = ['email', 'chat', 'create', 'group']
+   for (let i of selections) {
+      if (i === id) {
+         document.getElementById(i).classList.add('active')
+      } else {
+         document.getElementById(i).classList.remove('active')
+      }
+   }
+}
+
 const Home = () => {
    const [, setLogin, userData] = useContext(ModeContext)
+
+   const [reloader, setReloader] = useState(1)
 
    const logout = () => {
       googleLogout()
@@ -37,7 +52,53 @@ const Home = () => {
       token: userData.access_token,
    }
 
+   const [npg, setNpg] = useState(null)
+   const [hasNext, setHasNext] = useState(false)
    const [messages, setMessages] = useState(null)
+
+   const getNextPage = () => {
+      fetch(
+         `https://gmail.googleapis.com/gmail/v1/users/${data.id}/threads?pageToken=${npg}`,
+         {
+            method: 'get',
+            headers: {
+               Accept: 'application/json',
+               'Content-Type': 'application/json',
+               Authorization: 'Bearer ' + data.token,
+               Host: 'https://mail.google.com',
+            },
+         }
+      )
+         .then((response) => response.json())
+         .then((res) => {
+            let cheker = 0
+            for (let i = 0; i < res.threads.length; i++) {
+               msgs.push(res.threads[i])
+               cheker = cheker + 1
+            }
+            if (cheker === res.threads.length) {
+               if (res.nextPageToken) {
+                  setHasNext(true)
+                  setNpg(res.nextPageToken)
+               } else {
+                  setHasNext(false)
+               }
+               return true
+            } else {
+               return false
+            }
+         })
+         .then((isFinished) => {
+            if (isFinished) {
+               setMessages({ threads: msgs })
+               console.log(msgs.length)
+               setReloader(reloader + 1)
+            } else {
+               console.log(111)
+            }
+         })
+         .catch(console.error)
+   }
 
    useEffect(() => {
       fetch(`https://gmail.googleapis.com/gmail/v1/users/${data.id}/threads`, {
@@ -50,8 +111,22 @@ const Home = () => {
          },
       })
          .then((response) => response.json())
-         .then(setMessages)
+         .then((res) => {
+            let cheker = 0
+            for (let i = 0; i < res.threads.length; i++) {
+               msgs.push(res.threads[i])
+               cheker = cheker + 1
+            }
+            if (cheker === res.threads.length) {
+               if (res.nextPageToken) {
+                  setHasNext(true)
+                  setNpg(res.nextPageToken)
+               }
+            }
+            setMessages(res)
+         })
          .catch(console.error)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [data.id, data.token])
 
    useEffect(() => {
@@ -59,15 +134,174 @@ const Home = () => {
          const datas = {
             id: data.id,
             token: data.token,
+            email: data.email,
          }
-         message = getMessages(messages.threads, datas)
-         console.log(message)
+         const messagess = getMessages(messages.threads, datas)
+
+         message = messagess.inbox
+         sentMess = messagess.sent
       }
-   }, [data.id, data.token, messages])
+   }, [data.id, data.token, data.email, messages])
 
    const [mode, setMode] = useState({ mode: 'welcome' })
 
-   if (message) {
+   const Email = ({ reloader }) => {
+      const [isInbox, setIsInbox] = useState(true)
+      console.log(reloader)
+      if (message && reloader) {
+         if (isInbox) {
+            return (
+               <>
+                  <div className="mail-select">
+                     <button className="on">Inbox</button>
+                     <button onClick={() => setIsInbox(false)}>Sent</button>
+                  </div>
+                  {message.map((mess, id) => (
+                     <button
+                        id={id}
+                        onClick={() => {
+                           setMode({
+                              mode: 'message',
+                              email: data.email,
+                              id: data.id,
+                              mId: mess.id,
+                              token: data.token,
+                           })
+                           setActive(id)
+                        }}
+                        title={mess.subject}
+                        className="message-list"
+                        key={id}
+                     >
+                        <div className="avtr">
+                           <Avatar name={mess.from[0]} size="32" round={true} />
+                        </div>
+
+                        <div className="message-info">
+                           <h4 className="name">{mess.from[0]}</h4>
+                           <p className="subject">{mess.subject}</p>
+                           <p className="snippet">{mess.message}</p>
+                        </div>
+                     </button>
+                  ))}
+                  <button
+                     className={hasNext ? 'clickable' : 'notClickable'}
+                     onClick={() => getNextPage()}
+                  >
+                     Load more +
+                  </button>
+               </>
+            )
+         } else {
+            if (sentMess) {
+               return (
+                  <>
+                     <div className="mail-select">
+                        <button onClick={() => setIsInbox(true)}>Inbox</button>
+                        <button className="on">Sent</button>
+                     </div>
+                     {sentMess.map((mess, id) => (
+                        <button
+                           id={id}
+                           onClick={() => {
+                              setMode({
+                                 mode: 'message',
+                                 email: data.email,
+                                 id: data.id,
+                                 mId: mess.id,
+                                 token: data.token,
+                              })
+                              setActive(id)
+                           }}
+                           title={mess.subject}
+                           className="message-list"
+                           key={id}
+                        >
+                           <div className="avtr">
+                              <Avatar
+                                 name={mess.recieved}
+                                 size="32"
+                                 round={true}
+                              />
+                           </div>
+
+                           <div className="message-info">
+                              <h4 className="name">{mess.recieved}</h4>
+                              <p className="subject">{mess.subject}</p>
+                              <p className="snippet">{mess.message}</p>
+                           </div>
+                        </button>
+                     ))}
+                  </>
+               )
+            }
+         }
+      }
+   }
+
+   const Chat = () => {
+      let head = []
+
+      for (let i of message) {
+         if (head.length > 0) {
+            let notInHead = false
+            for (let h = 0; h < head.length; h++) {
+               if (head[h].name === i.from[0]) {
+                  head[h].count++
+                  break
+               } else {
+                  if (h === head.length - 1) {
+                     notInHead = true
+                  }
+               }
+            }
+            if (notInHead) {
+               let per = {
+                  name: i.from[0],
+                  count: 1,
+               }
+               head.push(per)
+            }
+         } else {
+            let per = {
+               name: i.from[0],
+               count: 1,
+            }
+            head.push(per)
+         }
+      }
+
+      if (head) {
+         return (
+            <>
+               {head.map((people, id) => (
+                  <button
+                     title={people.count + ' messages'}
+                     className="message-list"
+                     key={id}
+                  >
+                     <div className="avtr">
+                        <Avatar name={people.name} size="32" round={true} />
+                     </div>
+
+                     <div className="message-info">
+                        <h4 className="name">{people.name}</h4>
+                        <p className="subject">
+                           {people.count === 1
+                              ? `${people.count} message`
+                              : `${people.count} messages`}
+                        </p>
+                     </div>
+                  </button>
+               ))}
+            </>
+         )
+      }
+   }
+
+   const [mailMode, setMailMode] = useState(<Email reloader={reloader} />)
+
+   if (mailMode) {
       return (
          <>
             <div className="container">
@@ -90,42 +324,17 @@ const Home = () => {
                      </svg>
                   </div>
 
-                  <div className="side-contents">
-                     {message.map((mess, id) => (
-                        <button
-                           id={id}
-                           onClick={() => {
-                              setMode({
-                                 mode: 'message',
-                                 id: data.id,
-                                 mId: mess.id,
-                                 token: data.token,
-                              })
-                              setActive(id)
-                           }}
-                           title={mess.subject}
-                           className="message-list"
-                           key={id}
-                        >
-                           <div className="avtr">
-                              <Avatar
-                                 name={mess.from[0]}
-                                 size="32"
-                                 round={true}
-                              />
-                           </div>
-
-                           <div className="message-info">
-                              <h4 className="name">{mess.from[0]}</h4>
-                              <p className="subject">{mess.subject}</p>
-                              <p className="snippet">{mess.message}</p>
-                           </div>
-                        </button>
-                     ))}
-                  </div>
+                  <div className="side-contents">{mailMode}</div>
 
                   <div className="nav-fix-bottom">
-                     <button>
+                     <button
+                        title="email"
+                        id="email"
+                        onClick={() => {
+                           setNavActive('email')
+                           setMailMode(<Email reloader={reloader} />)
+                        }}
+                     >
                         <svg
                            xmlns="http://www.w3.org/2000/svg"
                            width="28"
@@ -138,12 +347,14 @@ const Home = () => {
                            <path d="M15.834 12.244c0 1.168-.577 2.025-1.587 2.025-.503 0-1.002-.228-1.12-.648h-.043c-.118.416-.543.643-1.015.643-.77 0-1.259-.542-1.259-1.434v-.529c0-.844.481-1.4 1.26-1.4.585 0 .87.333.953.63h.03v-.568h.905v2.19c0 .272.18.42.411.42.315 0 .639-.415.639-1.39v-.118c0-1.277-.95-2.326-2.484-2.326h-.04c-1.582 0-2.64 1.067-2.64 2.724v.157c0 1.867 1.237 2.654 2.57 2.654h.045c.507 0 .935-.07 1.18-.18v.731c-.219.1-.643.175-1.237.175h-.044C10.438 16 9 14.82 9 12.646v-.214C9 10.36 10.421 9 12.485 9h.035c2.12 0 3.314 1.43 3.314 3.034v.21Zm-4.04.21v.227c0 .586.227.8.581.8.31 0 .564-.17.564-.743v-.367c0-.516-.275-.708-.572-.708-.346 0-.573.245-.573.791Z" />
                         </svg>
                      </button>
+
                      <button
-                        onClick={() =>
-                           setMode({
-                              mode: 'note',
-                           })
-                        }
+                        title="chat"
+                        id="chat"
+                        onClick={() => {
+                           setNavActive('chat')
+                           setMailMode(<Chat />)
+                        }}
                      >
                         <svg
                            xmlns="http://www.w3.org/2000/svg"
@@ -156,15 +367,19 @@ const Home = () => {
                            <path d="M16 8c0 3.866-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7zM5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
                         </svg>
                      </button>
+
                      <button
-                        onClick={() =>
+                        title="compose"
+                        id="create"
+                        onClick={() => {
+                           setNavActive('create')
                            setMode({
                               mode: 'create',
                               id: data.id,
                               token: data.token,
                               email: data.email,
                            })
-                        }
+                        }}
                      >
                         <svg
                            xmlns="http://www.w3.org/2000/svg"
@@ -181,12 +396,16 @@ const Home = () => {
                            />
                         </svg>
                      </button>
+
                      <button
-                        onClick={() =>
+                        title="group"
+                        id="group"
+                        onClick={() => {
+                           setNavActive('group')
                            setMode({
                               mode: 'welcome',
                            })
-                        }
+                        }}
                      >
                         <svg
                            xmlns="http://www.w3.org/2000/svg"
@@ -199,7 +418,8 @@ const Home = () => {
                            <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z" />
                         </svg>
                      </button>
-                     <button onClick={logout}>
+
+                     <button title="logout" onClick={logout}>
                         <svg
                            xmlns="http://www.w3.org/2000/svg"
                            width="30"

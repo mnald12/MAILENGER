@@ -7,6 +7,17 @@ import { useEffect, useState } from 'react'
 import Content from './Content'
 import Avatar from 'react-avatar'
 
+const setNavActive = (id) => {
+   const selections = ['email', 'chat', 'create', 'group']
+   for (let i of selections) {
+      if (i === id) {
+         document.getElementById(i).classList.add('active')
+      } else {
+         document.getElementById(i).classList.remove('active')
+      }
+   }
+}
+
 const Home2 = ({ data }) => {
    const [messages, setMessages] = useState()
    const [, setLogin] = useContext(ModeContext)
@@ -16,7 +27,7 @@ const Home2 = ({ data }) => {
       sessionStorage.clear()
       setLogin(false)
    }
-   console.log(data)
+
    useEffect(() => {
       let options = {
          method: 'GET',
@@ -28,6 +39,7 @@ const Home2 = ({ data }) => {
          .then((response) => response.json())
          .then((res) => {
             console.log(res)
+            console.log(res.length)
             let cf = res.length
             let c = 0
 
@@ -78,7 +90,7 @@ const Home2 = ({ data }) => {
                   </div>
 
                   <div className="side-contents">
-                     {messages.map((mess) => (
+                     {messages.map((mess, id) => (
                         <button
                            onClick={() =>
                               setMode({
@@ -87,7 +99,7 @@ const Home2 = ({ data }) => {
                            }
                            title={mess.date}
                            className="message-list"
-                           key={mess.id}
+                           key={id}
                         >
                            <div className="avtr">
                               <Avatar
@@ -105,7 +117,12 @@ const Home2 = ({ data }) => {
                   </div>
 
                   <div className="nav-fix-bottom">
-                     <button>
+                     <button
+                        id="email"
+                        onClick={() => {
+                           setNavActive('email')
+                        }}
+                     >
                         <svg
                            xmlns="http://www.w3.org/2000/svg"
                            width="28"
@@ -119,11 +136,13 @@ const Home2 = ({ data }) => {
                         </svg>
                      </button>
                      <button
-                        onClick={() =>
+                        id="chat"
+                        onClick={() => {
+                           setNavActive('chat')
                            setMode({
                               mode: 'note',
                            })
-                        }
+                        }}
                      >
                         <svg
                            xmlns="http://www.w3.org/2000/svg"
@@ -137,14 +156,16 @@ const Home2 = ({ data }) => {
                         </svg>
                      </button>
                      <button
-                        onClick={() =>
+                        id="create"
+                        onClick={() => {
+                           setNavActive('create')
                            setMode({
                               mode: 'create',
                               id: data.id,
                               token: data.token,
                               email: data.email,
                            })
-                        }
+                        }}
                      >
                         <svg
                            xmlns="http://www.w3.org/2000/svg"
@@ -162,11 +183,13 @@ const Home2 = ({ data }) => {
                         </svg>
                      </button>
                      <button
-                        onClick={() =>
+                        id="group"
+                        onClick={() => {
+                           setNavActive('group')
                            setMode({
                               mode: 'welcome',
                            })
-                        }
+                        }}
                      >
                         <svg
                            xmlns="http://www.w3.org/2000/svg"

@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/alt-text */
 import logo from '../images/mylogo.png'
 import Home from './Home'
 import Home2 from './Home2'
@@ -80,13 +79,14 @@ const Login = () => {
                </div>
             </div>
             <div className="formContainer">
-               <img src={logo}></img>
+               <img src={logo} alt="logo"></img>
                <LoginSocialGoogle
                   client_id="430037630460-8u0dbl0gpl1r4vttum7hi1ro7ckkub98.apps.googleusercontent.com"
                   scope="https://mail.google.com"
                   discoveryDocs="claims_supported"
                   access_type="offline"
                   onResolve={({ data }) => {
+                     console.log(data)
                      let checker = 0
 
                      for (let i of users) {
@@ -138,7 +138,6 @@ const Login = () => {
                </div>
             </div>
             <div className="formContainer">
-               <img src={logo}></img>
                <div className="signup-form">
                   <label>Email :</label>
                   <input
@@ -153,6 +152,16 @@ const Login = () => {
                      placeholder="Please use your app password"
                      value={pwd}
                      onChange={(e) => setPwd(e.target.value)}
+                  ></input>
+                  <label>Host :</label>
+                  <input
+                     value={host}
+                     onChange={(e) => setHost(e.target.value)}
+                  ></input>
+                  <label>Port :</label>
+                  <input
+                     value={port}
+                     onChange={(e) => setPort(e.target.value)}
                   ></input>
                   <label>Host :</label>
                   <input

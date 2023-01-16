@@ -10,7 +10,7 @@
    height: 100%;
    border: none;
    outline: none;
-   border-bottom: 1px solid rgb(203, 13, 209);
+   border-bottom: 1px solid black;
    background: transparent;
 }
 .create-form .textBox {
@@ -18,7 +18,7 @@
    border: none;
    outline: none;
    height: auto;
-   border-bottom: 1px solid rgb(203, 13, 209);
+   border-bottom: 1px solid black;
    margin-top: 10px;
    padding-bottom: 10px;
 }
@@ -34,19 +34,30 @@
    transition: 0.5s;
    border-radius: 4px;
    float: right;
+   display: flex;
+   align-items: center;
+   gap: 10px;
 }
 .sendButton:hover {
-   color: aliceblue;
+   color: aliceblue !important;
    background: darkviolet;
+}
+
+.sendButton:hover svg {
+   color: aliceblue !important;
 }
 .label {
    color: rgba(10, 10, 10, 0.551);
 }
 .create-form input:focus,
 .create-form .textBox:focus {
-   border-bottom: 2px solid rgb(203, 13, 209);
+   border-bottom: 2px solid black;
 }
 .space {
    width: 100%;
    height: 20px;
+}
+body.mceContentBody {
+   background: aliceblue;
+   color: #000;
 }

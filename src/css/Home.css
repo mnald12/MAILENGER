@@ -1,9 +1,11 @@
 .container {
    width: 100%;
-   height: 600px;
    display: flex;
    justify-content: center;
    gap: 10px;
    flex-wrap: wrap;
    padding: 12px;
+}
+.full-message {
+   display: none;
 }
