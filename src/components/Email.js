@@ -29,15 +29,7 @@ const setOn = (id) => {
 }
 
 const Email = () => {
-   const {
-      data,
-      message,
-      sentMessage,
-      setMode,
-      setActive,
-      getNextPage,
-      hasNext,
-   } = useContext(Data)
+   const { message, sentMessage, setMode, setActive } = useContext(Data)
 
    const [length, setLength] = useState(0)
    const [sortedMessages, setSortedMessages] = useState(null)
@@ -91,10 +83,7 @@ const Email = () => {
                      onClick={() => {
                         setMode({
                            mode: 'message',
-                           email: data.email,
-                           id: data.sub,
-                           mId: mess.id,
-                           token: data.access_token,
+                           data: mess,
                         })
                         setActive(id)
                      }}
@@ -103,22 +92,21 @@ const Email = () => {
                      key={id}
                   >
                      <div className="avtr">
-                        <Avatar name={mess.from[0]} size="32" round={true} />
+                        <Avatar
+                           name={mess.name ? mess.name : mess.from}
+                           size="32"
+                           round={true}
+                        />
                      </div>
 
                      <div className="message-info">
-                        <h4 className="name">{mess.from[0]}</h4>
+                        <h4 className="name">
+                           {mess.name ? mess.name : mess.from}
+                        </h4>
                         <p className="subject">{mess.subject}</p>
-                        <p className="snippet">{mess.message}</p>
                      </div>
                   </button>
                ))}
-               <button
-                  className={hasNext ? 'clickable' : 'notClickable'}
-                  onClick={() => getNextPage()}
-               >
-                  Load more +
-               </button>
             </div>
             <div id={'sentBox'} style={{ display: 'none' }}>
                {sortedSentMessages.map((mess, id) => (
@@ -127,10 +115,7 @@ const Email = () => {
                      onClick={() => {
                         setMode({
                            mode: 'sentMessage',
-                           email: data.email,
-                           id: data.sub,
-                           mId: mess.id,
-                           token: data.access_token,
+                           data: mess,
                         })
                         setActive(id)
                      }}
@@ -139,13 +124,12 @@ const Email = () => {
                      key={id}
                   >
                      <div className="avtr">
-                        <Avatar name={mess.recieved} size="32" round={true} />
+                        <Avatar name={mess.to} size="32" round={true} />
                      </div>
 
                      <div className="message-info">
-                        <h4 className="name">To: {mess.recieved}</h4>
+                        <h4 className="name">To: {mess.to}</h4>
                         <p className="subject">{mess.subject}</p>
-                        <p className="snippet">{mess.message}</p>
                      </div>
                   </button>
                ))}

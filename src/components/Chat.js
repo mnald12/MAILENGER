@@ -1,11 +1,9 @@
-import { useContext, useEffect } from 'react'
+import { useContext } from 'react'
 import { Data } from './Index'
 import Avatar from 'react-avatar'
 
 const Chat = () => {
    const { chats, setMode } = useContext(Data)
-
-   useEffect(() => console.log(chats))
 
    return (
       <>
@@ -15,6 +13,9 @@ const Chat = () => {
                key={id}
                onClick={() => {
                   setMode({ mode: 'chat-view', conversation: people })
+                  setTimeout(() => {
+                     document.getElementById('main-content').scrollTop = 0
+                  }, 100)
                }}
             >
                <div className="avtr">
@@ -23,9 +24,9 @@ const Chat = () => {
                <div className="chat-info">
                   <h4 className="name">{people.name}</h4>
                   <p className="subject">
-                     {people.contents.length === 1
-                        ? `${people.contents.length} message`
-                        : `${people.contents.length} messages`}
+                     {people.messageLists.length === 1
+                        ? `${people.messageLists.length} message`
+                        : `${people.messageLists.length} messages`}
                   </p>
                </div>
             </button>

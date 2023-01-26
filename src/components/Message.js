@@ -1,17 +1,12 @@
-import { useEffect, useState, useRef } from 'react'
+import { useContext, useEffect, useState, useRef } from 'react'
+import { Data } from './Index'
 import { Editor } from '@tinymce/tinymce-react'
 import '../css/Message.css'
-import { Parser } from 'html-to-react'
 import Loader from './Loader'
+import sendEmail from '../methods/sendEmail'
 
-const base64 = require('base-64')
-
-const Message = ({ data }) => {
-   const [dataSrc, setDataSrc] = useState(null)
-   const [name, setName] = useState(null)
-   const [subjects, setSubjects] = useState(null)
-   const [snippet, setSnippet] = useState(null)
-   const [date, setDate] = useState(null)
+const Message = ({ datas }) => {
+   const { data } = useContext(Data)
    const [isreply, setIsReply] = useState(false)
 
    const setCond = (cond) => {
@@ -24,83 +19,34 @@ const Message = ({ data }) => {
 
    useEffect(() => {
       setCond(false)
-   }, [data])
-
-   useEffect(() => {
-      setDataSrc(null)
-      fetch(
-         `https://gmail.googleapis.com/gmail/v1/users/${data.id}/threads/${data.mId}`,
-         {
-            method: 'get',
-            headers: {
-               Accept: 'application/json',
-               'Content-Type': 'application/json',
-               Authorization: 'Bearer ' + data.token,
-               Host: 'https://mail.google.com',
-            },
-         }
-      )
-         .then((response) => response.json())
-         .then((res) => {
-            for (let n of res.messages[0].payload.headers) {
-               if (n.name === 'From') {
-                  setName(n.value)
-               }
-               if (n.name === 'Subject') {
-                  setSubjects(n.value)
-               }
-               if (n.name === 'Date') {
-                  setDate(n.value)
-               }
-            }
-
-            setSnippet(res.messages[0].snippet)
-
-            let result = 'parts' in res.messages[0].payload
-            if (result) {
-               for (let i = 0; i < res.messages[0].payload.parts.length; i++) {
-                  if (
-                     res.messages[0].payload.parts[i].mimeType === 'text/html'
-                  ) {
-                     setDataSrc(res.messages[0].payload.parts[i].body.data)
-                  }
-               }
-            } else {
-               setDataSrc(res.messages[0].payload.body.data)
-            }
-         })
-         .catch(console.error)
-   }, [data.id, data.mId, data.token])
+   }, [datas])
 
    const Reply = () => {
-      const [to, setTo] = useState(name)
+      const [to, setTo] = useState(datas.from)
       const [subject, setSubject] = useState('')
       const [key, setKey] = useState(1)
       const editorRef = useRef(null)
 
-      const sendMail = () => {
+      const send = () => {
          if (editorRef.current) {
-            let options = {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({
-                  from: data.email,
-                  to: to,
-                  subject: subject,
-                  text: '',
-                  html: editorRef.current.getContent(),
-                  token: data.token,
-               }),
+            const res = sendEmail({
+               host: data.smtpHost,
+               port: data.smtpPort,
+               pwd: data.pwd,
+               from: data.email,
+               to: to,
+               subject: subject,
+               text: '',
+               html: editorRef.current.getContent(),
+            })
+
+            console.log(res)
+
+            if (res === 'success') {
+               setKey(key + 1)
+               setTo('')
+               setSubject('')
             }
-            fetch('/send', options)
-               .then((res) => {
-                  setTo('')
-                  setSubject('')
-                  setKey(key + 1)
-                  editorRef.current.value = null
-                  console.log(res)
-               })
-               .catch((err) => console.log(err))
          }
       }
 
@@ -130,12 +76,13 @@ const Message = ({ data }) => {
                   apiKey="2e4rt61pepx5xgo2mchhc3x9edy93wooey5syeecpk4trzor"
                   onInit={(evt, editor) => (editorRef.current = editor)}
                   init={{
-                     height: 350,
-                     menubar: true,
+                     height: 360,
+                     menubar: false,
+                     statusbar: false,
                      plugins: [
-                        'advlist autolink lists link image charmap print preview anchor',
+                        'advlist autolink lists link image charmap print anchor',
                         'searchreplace visualblocks code fullscreen',
-                        'insertdatetime media table paste code help wordcount',
+                        'insertdatetime media table paste code help',
                         'image',
                         'table',
                      ],
@@ -150,8 +97,11 @@ const Message = ({ data }) => {
                         'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                   }}
                />
-               <br />
-               <button className="sendButton" onClick={sendMail}>
+               <button
+                  className="sendButton"
+                  style={{ transform: 'translateY(10px)' }}
+                  onClick={() => send()}
+               >
                   <svg
                      xmlns="http://www.w3.org/2000/svg"
                      width="16"
@@ -171,7 +121,7 @@ const Message = ({ data }) => {
       )
    }
 
-   if (dataSrc) {
+   if (datas.html) {
       if (isreply) {
          return (
             <>
@@ -182,22 +132,18 @@ const Message = ({ data }) => {
             </>
          )
       } else {
-         let htmlSrc = base64.decode(
-            dataSrc.replace(/-/g, '+').replace(/_/g, '/')
-         )
          return (
             <>
                <div className="fix-header">
-                  <h3>{name}</h3>
+                  <h3>{datas.name ? datas.name : datas.from}</h3>
                   <button onClick={() => setCond(true)}>Reply</button>
                </div>
                <div className="headers">
-                  <p className="date">{date}</p>
-                  <h3 className="subs">{subjects}</h3>
-                  <p className="snpt">{snippet}</p>
+                  <p className="date">{datas.date}</p>
+                  <h3 className="subs">{datas.subject}</h3>
                </div>
                <br />
-               {Parser().parse(htmlSrc)}
+               <div dangerouslySetInnerHTML={{ __html: datas.html }}></div>
             </>
          )
       }

@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { googleLogout } from '@react-oauth/google'
+import React, { useState, useEffect } from 'react'
 import Displayer from './Displayer'
 import '../css/CallModal.css'
 import '../css/Content.css'
@@ -8,6 +7,19 @@ import '../css/Home.css'
 import '../css/Login.css'
 import '../css/Message.css'
 import '../css/Sidebar.css'
+import '../css/Group.css'
+import io from 'socket.io-client'
+import {
+   onAborted,
+   onAnswer,
+   onCandidate,
+   onClose,
+   onClose2,
+   onOffer,
+   onReject,
+   setSocket,
+} from '../methods/webRTCHandler'
+const socket = io.connect('http://localhost:4000')
 
 const Data = React.createContext(null)
 
@@ -22,19 +34,29 @@ const Index = () => {
    const [sentMessage, setSentMessage] = useState([])
    const [chats, setChats] = useState([])
    const [groups, setGroups] = useState([])
-   const [mailMode, setMailMode] = useState()
+   const [mailMode, setMailMode] = useState(null)
    const [mode, setMode] = useState({
       mode: 'welcome',
    })
-   // eslint-disable-next-line no-unused-vars
    const [hasNext, setHasNext] = useState(null)
    const [isInbox, setIsInbox] = useState(true)
    const [isToView, setIsToView] = useState(null)
+   const [current, setCurrent] = useState(null)
 
    const logout = () => {
-      googleLogout()
-      sessionStorage.clear()
+      setData(null)
       setLogin(false)
+      setIsLoaded(false)
+      setMessage([])
+      setList([])
+      setSentMessage([])
+      setChats([])
+      setGroups([])
+      setMailMode(null)
+      setMode({ mode: 'welcome' })
+      setHasNext(null)
+      setIsInbox(true)
+      setIsToView(null)
    }
 
    const setActive = (id) => {
@@ -58,39 +80,72 @@ const Index = () => {
       }
    }
 
-   const getNextPage = () => {
-      fetch(
-         `https://gmail.googleapis.com/gmail/v1/users/${data.sub}/threads?pageToken=${hasNext}`,
-         {
-            method: 'get',
-            headers: {
-               Accept: 'application/json',
-               'Content-Type': 'application/json',
-               Authorization: 'Bearer ' + data.access_token,
-               Host: 'https://mail.google.com',
-            },
-         }
-      )
-         .then((response) => response.json())
-         .then((res) => {
-            for (let i of res.threads) {
-               list.push(i)
-            }
-            console.log(list.length)
-            if (res.nextPageToken) {
-               setHasNext(res.nextPageToken)
-            } else {
-               setHasNext(null)
-            }
-         })
-         .catch(console.error)
+   const addEmailToSocket = (email) => {
+      socket.emit('save-user', socket.id, email)
    }
+
+   const getID = (email) => {
+      let ID
+      socket.emit('get-id', email, (id) => {
+         ID = id
+      })
+      return ID
+   }
+
+   useEffect(() => {
+      setSocket(socket)
+
+      socket.on('candidate', (candidate) => {
+         onCandidate(candidate)
+      })
+
+      socket.on('offer', (id, description, name, mode) => {
+         if (mode === 'video-call') {
+            setMode({
+               mode: 'incoming-video-call',
+               name: name,
+            })
+         } else {
+            setMode({
+               mode: 'incoming-audio-call',
+               name: name,
+            })
+         }
+         onOffer(id, description)
+      })
+
+      socket.on('answer', async (answer) => {
+         onAnswer(answer)
+      })
+
+      socket.on('reject', () => {
+         console.log('rejects')
+         onReject()
+      })
+
+      socket.on('aborted', () => {
+         onAborted()
+      })
+
+      socket.on('close', () => {
+         onClose()
+      })
+
+      socket.on('close2', () => {
+         onClose2()
+      })
+
+      return () => {
+         socket.off('call-incoming')
+      }
+   }, [])
 
    return (
       <Data.Provider
          value={{
             maxHeight,
             data,
+            addEmailToSocket,
             setData,
             isLogIn,
             setLogin,
@@ -113,13 +168,15 @@ const Index = () => {
             setMode,
             setNavActive,
             setActive,
-            getNextPage,
             hasNext,
             setHasNext,
             isInbox,
             setIsInbox,
             isToView,
             setIsToView,
+            current,
+            setCurrent,
+            getID,
          }}
       >
          <Displayer />

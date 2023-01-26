@@ -8,7 +8,7 @@ const Sidebar = () => {
 
    return (
       <>
-         <div className="sidebar">
+         <div className="sidebar" id="sidebar">
             <Profile />
             <div className="side-contents" id="side-contents">
                {mailMode}

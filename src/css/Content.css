@@ -7,6 +7,18 @@
    padding-right: 12px;
    position: relative;
 }
+.main-content .img-container {
+   width: 100%;
+   height: 100%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+.main-content .img-container img {
+   width: 300px;
+   height: 300px;
+   opacity: 0.6;
+}
 .main-content .left {
    width: 100%;
    height: auto;
@@ -77,18 +89,18 @@
    position: sticky;
    bottom: 0;
    border-top: 1px solid black;
-   border-bottom: 1px solid black;
    background-color: white;
    display: flex;
-   align-items: center;
+   align-items: flex-end;
    padding: 6px 0;
+   gap: 10px;
 }
 .fix-footer .inputs {
-   width: 85%;
+   width: 94%;
    height: auto;
 }
 .fix-footer .actions {
-   width: 15%;
+   width: 6%;
    height: auto;
 }
 .fix-footer input {
@@ -102,8 +114,284 @@
    font-weight: bolder;
 }
 .fix-footer .actions button {
-   padding: 10px 30px;
+   padding: 10px;
+   border-radius: 50%;
    display: flex;
    align-items: center;
    gap: 8px;
+   cursor: pointer;
+   border: none;
+   outline: none;
+   margin-top: 5px;
+}
+.fix-footer .actions .sendBtn {
+   margin-top: 10px;
+}
+.video-container {
+   width: 100%;
+   height: 520px;
+   background-color: azure;
+   position: relative;
+   margin-top: 10px;
+   overflow: hidden;
+}
+.video-container .remote {
+   width: 100%;
+   height: 100%;
+   position: absolute;
+   left: 0;
+   top: 0;
+   border-radius: 5px;
+   border: 1px solid black;
+}
+.video-container .local {
+   width: 200px;
+   height: 200px;
+   position: absolute;
+   left: 80px;
+   top: -10px;
+   border-radius: 5px;
+}
+
+.call-dialog {
+   width: 300px;
+   height: auto;
+   padding: 20px;
+   text-align: center;
+   border-radius: 6px;
+   background-color: rgba(50, 205, 50, 0.442);
+   position: absolute;
+   left: 250px;
+   top: 180px;
+   transition: 0.5s;
+   box-shadow: 0 0 3px 0 black;
+   transform: translateY(0);
+}
+.call-dialog h3 {
+   padding: 20px;
+}
+.call-dialog button {
+   padding: 10px;
+   border: none;
+   outline: none;
+   border-radius: 5px;
+   background-color: rgba(255, 0, 0, 0.733);
+   color: aliceblue;
+   cursor: pointer;
+}
+
+.callended-dialog {
+   width: 300px;
+   height: 140px;
+   padding: 20px;
+   text-align: center;
+   border-radius: 6px;
+   background-color: rgba(50, 205, 50, 0.442);
+   position: absolute;
+   left: 250px;
+   top: 180px;
+   transition: 0.5s;
+   box-shadow: 0 0 3px 0 black;
+   transform: translateY(400px);
+}
+.callended-dialog h3 {
+   padding: 20px;
+}
+.callended-dialog button {
+   padding: 10px;
+   border: none;
+   outline: none;
+   border-radius: 5px;
+   background-color: rgba(255, 0, 0, 0.733);
+   color: aliceblue;
+}
+
+.call-rejected {
+   width: 300px;
+   height: 140px;
+   padding: 20px;
+   text-align: center;
+   border-radius: 6px;
+   background-color: rgba(50, 205, 50, 0.442);
+   position: absolute;
+   left: 250px;
+   top: 180px;
+   box-shadow: 0 0 3px 0 black;
+   transform: translateY(400px);
+   transition: 0.5s;
+}
+.call-rejected h3 {
+   padding: 20px;
+}
+.call-rejected button {
+   padding: 10px;
+   border: none;
+   outline: none;
+   border-radius: 5px;
+   background-color: rgba(255, 0, 0, 0.733);
+   color: aliceblue;
+}
+
+.call-aborted {
+   width: 300px;
+   height: 140px;
+   padding: 20px;
+   text-align: center;
+   border-radius: 6px;
+   background-color: rgba(50, 205, 50, 0.442);
+   position: absolute;
+   left: 250px;
+   top: 180px;
+   box-shadow: 0 0 3px 0 black;
+   transform: translateY(400px);
+   transition: 0.5s;
+}
+.call-aborted h3 {
+   padding: 20px;
+}
+.call-aborted button {
+   padding: 10px;
+   border: none;
+   outline: none;
+   border-radius: 5px;
+   background-color: rgba(255, 0, 0, 0.733);
+   color: aliceblue;
+}
+
+.call-action {
+   position: absolute;
+   width: auto;
+   height: auto;
+   text-align: center;
+   left: 360px;
+   bottom: 50px;
+   transform: translateY(200px);
+   transition: 0.5s;
+}
+.call-action button {
+   border-radius: 50%;
+   width: 50px;
+   height: 50px;
+   padding: 10px;
+   border: none;
+   outline: none;
+   cursor: pointer;
+   box-shadow: 0 0 2px 0 black;
+   background-color: aliceblue;
+   opacity: 0.5;
+}
+.call-action button:hover {
+   opacity: 1;
+}
+.not-available {
+   width: 300px;
+   height: 140px;
+   padding: 20px;
+   text-align: center;
+   border-radius: 6px;
+   background-color: rgba(50, 205, 50, 0.442);
+   position: absolute;
+   left: 250px;
+   top: 180px;
+   transition: 0.5s;
+   box-shadow: 0 0 3px 0 black;
+   transform: translateY(400px);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.calling-dialog {
+   width: 300px;
+   height: auto;
+   padding: 20px;
+   text-align: center;
+   border-radius: 6px;
+   background-color: rgba(50, 205, 50, 0.442);
+   position: absolute;
+   left: 250px;
+   top: 180px;
+   transition: 0.5s;
+   box-shadow: 0 0 3px 0 black;
+}
+.calling-dialog h3 {
+   padding: 20px;
+}
+.calling-dialog button {
+   padding: 10px;
+   border: none;
+   outline: none;
+   border-radius: 5px;
+   background-color: rgba(255, 0, 0, 0.733);
+   color: aliceblue;
+   cursor: pointer;
+   margin: 8px;
+}
+
+.calling-action {
+   position: absolute;
+   width: auto;
+   height: auto;
+   text-align: center;
+   left: 360px;
+   bottom: 50px;
+   transform: translateY(200px);
+   transition: 0.5s;
+}
+.calling-action button {
+   border-radius: 50%;
+   width: 50px;
+   height: 50px;
+   padding: 10px;
+   border: none;
+   outline: none;
+   cursor: pointer;
+   box-shadow: 0 0 2px 0 black;
+   background-color: aliceblue;
+   opacity: 0.5;
+}
+.calling-action button:hover {
+   opacity: 1;
+}
+
+.callended-dialogs {
+   width: 300px;
+   height: 140px;
+   padding: 20px;
+   text-align: center;
+   border-radius: 6px;
+   background-color: rgba(50, 205, 50, 0.442);
+   position: absolute;
+   left: 250px;
+   top: 180px;
+   transition: 0.5s;
+   box-shadow: 0 0 3px 0 black;
+   transform: translateY(400px);
+}
+.callended-dialogs h3 {
+   padding: 20px;
+}
+.callended-dialogs button {
+   padding: 10px;
+   border: none;
+   outline: none;
+   border-radius: 5px;
+   background-color: rgba(255, 0, 0, 0.733);
+   color: aliceblue;
+}
+
+.group-message p {
+   color: black;
+   opacity: 1;
+   font-size: 16px;
+   font-weight: 500;
+}
+
+.mess-headers {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   margin-bottom: 10px;
+   border-bottom: 1px solid black;
+   padding-bottom: 12px;
 }

@@ -61,8 +61,7 @@ const Navbar = () => {
                setNavActive('create')
                setMode({
                   mode: 'create',
-                  id: data.id,
-                  token: data.token,
+                  token: data.pwd,
                   email: data.email,
                })
             }}

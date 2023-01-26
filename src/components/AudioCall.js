@@ -9,7 +9,7 @@ import {
    initCam,
 } from '../methods/webRTCHandler'
 
-const VideoCall = ({ vData }) => {
+const AudioCall = ({ vData }) => {
    const { data, setMode } = useContext(Data)
 
    const back = async () => {
@@ -21,8 +21,8 @@ const VideoCall = ({ vData }) => {
 
    // eslint-disable-next-line react-hooks/exhaustive-deps
    const startCall = async () => {
-      await initCam('video')
-      call(vData.email, data.email, 'video-call')
+      await initCam('audio')
+      call(vData.email, data.email, 'audio-call')
    }
 
    useEffect(() => {
@@ -43,7 +43,7 @@ const VideoCall = ({ vData }) => {
       <>
          <div className="fix-header">
             <Avatar name={vData.name} size="30" round={true} />
-            <h3 style={{ marginLeft: '8px' }}> {vData.name} | Video Call</h3>
+            <h3 style={{ marginLeft: '8px' }}> {vData.name} | Audio Call</h3>
             <button className="end-call" onClick={() => back()}>
                Back
             </button>
@@ -118,4 +118,4 @@ const VideoCall = ({ vData }) => {
    )
 }
 
-export default VideoCall
+export default AudioCall

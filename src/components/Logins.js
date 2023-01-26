@@ -1,11 +1,9 @@
 import logo from '../images/mylogo.png'
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState } from 'react'
 import { Data } from './Index'
-import { GoogleLoginButton } from 'react-social-login-buttons'
-import { LoginSocialGoogle } from 'reactjs-social-login'
-import getAllMails from '../methods/getAllMails'
 import getChats from '../methods/getChats'
 import getMessages from '../methods/getMess'
+import getGroups from '../methods/getGroups'
 
 const intros = [
    'Not just an Email!',
@@ -17,56 +15,19 @@ const intros = [
 
 const intro = intros[Math.floor(Math.random() * intros.length)]
 
-let users
-
-const saveUser = (data) => {
-   let checker = 0
-
-   for (let i of users) {
-      if (i.userId === data.sub) {
-         checker = checker + 1
-      }
-   }
-
-   if (checker === 0) {
-      let options = {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-            userName: data.name,
-            userId: data.sub,
-            userAvatar: data.picture,
-            userEmail: data.email,
-         }),
-      }
-      fetch('/users', options)
-         .then((res) => console.log(res))
-         .catch((err) => console.log(err))
-   }
-}
-
 const Logins = () => {
-   useEffect(() => {
-      const options = {
-         method: 'GET',
-      }
-      fetch('/users', options)
-         .then((response) => response.json())
-         .then((res) => {
-            users = res
-         })
-         .catch(console.error)
-   }, [])
-
    const {
       setData,
+      addEmailToSocket,
       setLogin,
       setIsLoaded,
       setList,
       setChats,
       setMessage,
       setSentMessage,
+      setGroups,
    } = useContext(Data)
+
    const [signup, setSignUp] = useState(false)
    const [email, setEmail] = useState('')
    const [pwd, setPwd] = useState('')
@@ -74,6 +35,28 @@ const Logins = () => {
    const [port, setPort] = useState('993')
    const [shost, setsHost] = useState('smtp.gmail.com')
    const [sport, setsPort] = useState('465')
+
+   const getEmails = async () => {
+      let options = {
+         method: 'GET',
+      }
+      await fetch(`/users2/${email}/${pwd}/${host}/${port}`, options)
+         .then((response) => response.json())
+         .then((res) => {
+            const chat = getChats(res, email)
+            setList(res)
+            console.log(chat)
+            setChats(chat)
+            const emails = getMessages(res, email)
+            setMessage(emails.inbox)
+            setSentMessage(emails.sent)
+            setIsLoaded(true)
+            addEmailToSocket(email)
+            const grps = getGroups(email)
+            grps.then((res) => setGroups(res))
+         })
+         .catch(console.error)
+   }
 
    if (signup) {
       return (
@@ -127,10 +110,19 @@ const Logins = () => {
                      <button
                         className="submit"
                         onClick={() => {
+                           setData({
+                              email: email,
+                              pwd: pwd,
+                              imapHost: host,
+                              imapPort: port,
+                              smtpHost: shost,
+                              smtpPort: sport,
+                           })
                            setLogin(true)
+                           getEmails()
                         }}
                      >
-                        Signup
+                        Login
                      </button>
                   </div>
                </div>
@@ -148,36 +140,8 @@ const Logins = () => {
             </div>
             <div className="formContainer">
                <img src={logo} alt="logo"></img>
-               <LoginSocialGoogle
-                  client_id="430037630460-8u0dbl0gpl1r4vttum7hi1ro7ckkub98.apps.googleusercontent.com"
-                  scope="https://mail.google.com"
-                  discoveryDocs="claims_supported"
-                  access_type="offline"
-                  typeResponse="accessToken"
-                  onResolve={async ({ data }) => {
-                     console.log(data)
-                     saveUser(data)
-                     setLogin(true)
-                     setData(data)
-                     const all = await getAllMails(data)
-                     const msg = getMessages(all, data)
-                     const chat = await getChats(all, data)
-                     setList(all)
-                     setChats(chat)
-                     setMessage(msg.inbox)
-                     setSentMessage(msg.sent)
-                     setIsLoaded(true)
-                  }}
-                  onReject={(err) => {
-                     console.log('login failed')
-                     console.log(err)
-                  }}
-               >
-                  <GoogleLoginButton />
-               </LoginSocialGoogle>
-               <center>OR</center>
                <button onClick={() => setSignUp(true)} className="signup-btn">
-                  SignUp
+                  Login with gmail
                </button>
             </div>
          </div>

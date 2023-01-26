@@ -2,48 +2,46 @@ import { useContext, useEffect } from 'react'
 import { Data } from './Index'
 import Avatar from 'react-avatar'
 import {
-   call,
-   abort,
-   endCall1,
-   offCam,
+   accept,
+   decline,
+   endCall2,
    initCam,
+   offCam,
 } from '../methods/webRTCHandler'
 
-const VideoCall = ({ vData }) => {
+const IncomingAudioCall = ({ caller }) => {
    const { data, setMode } = useContext(Data)
 
-   const back = async () => {
+   const back = () => {
       setMode({ mode: 'welcome' })
+      offCam()
       document.getElementById('sidebar').style.opacity = '1'
       document.getElementById('sidebar').style.pointerEvents = 'auto'
-      offCam()
-   }
-
-   // eslint-disable-next-line react-hooks/exhaustive-deps
-   const startCall = async () => {
-      await initCam('video')
-      call(vData.email, data.email, 'video-call')
    }
 
    useEffect(() => {
-      startCall()
+      initCam('audio')
       document.getElementById('sidebar').style.opacity = '0.50'
       document.getElementById('sidebar').style.pointerEvents = 'none'
-   }, [startCall])
+   }, [])
 
-   const callended = () => {
-      document.getElementById('dialog3').style.transform = 'translateY(400px)'
+   const acceptCall = () => {
+      accept()
    }
 
-   const callreject = () => {
-      document.getElementById('dialog2').style.transform = 'translateY(400px)'
+   const callended = () => {
+      document.getElementById('dialog7').style.transform = 'translateY(400px)'
+   }
+
+   const callabort = () => {
+      document.getElementById('dialog8').style.transform = 'translateY(400px)'
    }
 
    return (
       <>
          <div className="fix-header">
-            <Avatar name={vData.name} size="30" round={true} />
-            <h3 style={{ marginLeft: '8px' }}> {vData.name} | Video Call</h3>
+            <Avatar name={caller.name} size="30" round={true} />
+            <h3 style={{ marginLeft: '8px' }}> {caller.name} | Audio Call</h3>
             <button className="end-call" onClick={() => back()}>
                Back
             </button>
@@ -53,49 +51,41 @@ const VideoCall = ({ vData }) => {
             <video className="remote" id="remote" autoPlay></video>
             <video className="local" id="local" muted autoPlay></video>
 
-            <div className="call-dialog" id="dialog1">
-               <h3>Calling {vData.name}</h3>
-               <div className="call-abort">
+            <div className="calling-dialog" id="dialog6">
+               <h3>{caller.name} is Calling</h3>
+               <div className="callings">
                   <button
+                     style={{ background: 'green' }}
                      onClick={() => {
-                        abort(vData.id)
+                        acceptCall()
                      }}
                   >
-                     Abort
+                     Accept
+                  </button>
+                  <button
+                     onClick={() => {
+                        decline(data.id)
+                     }}
+                  >
+                     Reject
                   </button>
                </div>
             </div>
 
-            <div className="call-rejected" id="dialog2">
-               <h3>Call rejected</h3>
-               <button
-                  onClick={() => {
-                     callreject()
-                  }}
-               >
-                  OK
-               </button>
-            </div>
-
-            <div className="callended-dialog" id="dialog3">
+            <div className="callended-dialogs" id="dialog7">
                <h3>Call ended</h3>
-               <button
-                  onClick={() => {
-                     callended()
-                  }}
-               >
-                  OK
-               </button>
+               <button onClick={() => callended()}>OK</button>
             </div>
 
-            <div className="not-available" id="dialog4">
-               <h3>{vData.name} is not available</h3>
+            <div className="call-aborted" id="dialog8">
+               <h3>Call aborted</h3>
+               <button onClick={() => callabort()}>OK</button>
             </div>
 
-            <div className="call-action" id="dialog5">
+            <div className="calling-action" id="dialog9">
                <button
                   onClick={() => {
-                     endCall1()
+                     endCall2()
                   }}
                >
                   <svg
@@ -118,4 +108,4 @@ const VideoCall = ({ vData }) => {
    )
 }
 
-export default VideoCall
+export default IncomingAudioCall

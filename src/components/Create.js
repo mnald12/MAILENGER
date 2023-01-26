@@ -1,36 +1,35 @@
 import '../css/Create.css'
-import { useState, useRef } from 'react'
+import { useState, useRef, useContext } from 'react'
 import { Editor } from '@tinymce/tinymce-react'
+import sendEmail from '../methods/sendEmail'
+import { Data } from './Index'
 
-const Create = ({ data }) => {
+const Create = () => {
+   const { data } = useContext(Data)
+
    const [to, setTo] = useState('')
    const [subject, setSubject] = useState('')
    const [key, setKey] = useState(1)
    const editorRef = useRef(null)
 
-   const sendMail = () => {
-      if (editorRef.current) {
-         let options = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-               from: data.email,
-               to: to,
-               subject: subject,
-               text: '',
-               html: editorRef.current.getContent(),
-               token: data.token,
-            }),
-         }
-         fetch('/send', options)
-            .then((res) => {
-               setTo('')
-               setSubject('')
-               setKey(key + 1)
-               editorRef.current.value = null
-               console.log(res)
-            })
-            .catch((err) => console.log(err))
+   const send = () => {
+      const res = sendEmail({
+         host: data.smtpHost,
+         port: data.smtpPort,
+         pwd: data.pwd,
+         from: data.email,
+         to: to,
+         subject: subject,
+         text: '',
+         html: editorRef.current.getContent(),
+      })
+
+      console.log(res)
+
+      if (res === 'success') {
+         setKey(key + 1)
+         setTo('')
+         setSubject('')
       }
    }
 
@@ -60,12 +59,13 @@ const Create = ({ data }) => {
                apiKey="2e4rt61pepx5xgo2mchhc3x9edy93wooey5syeecpk4trzor"
                onInit={(evt, editor) => (editorRef.current = editor)}
                init={{
-                  height: 380,
-                  menubar: true,
+                  height: 400,
+                  menubar: false,
+                  statusbar: false,
                   plugins: [
-                     'advlist autolink lists link image charmap print preview anchor',
+                     'advlist autolink lists link image charmap print anchor',
                      'searchreplace visualblocks code fullscreen',
-                     'insertdatetime media table paste code help wordcount',
+                     'insertdatetime media table paste code help',
                      'image',
                      'table',
                   ],
@@ -81,7 +81,7 @@ const Create = ({ data }) => {
                }}
             />
             <br />
-            <button className="sendButton" onClick={sendMail}>
+            <button className="sendButton" onClick={() => send()}>
                <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
