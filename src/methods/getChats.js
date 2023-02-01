@@ -1,5 +1,6 @@
 import { v4 } from 'uuid'
 const getChats = (lists, email) => {
+   console.log(lists)
    let chatList = []
    let waiting = []
 
@@ -31,6 +32,7 @@ const getChats = (lists, email) => {
                   id: v4(),
                   email: i.from,
                   messageLists: [i],
+                  hasNewMessage: false,
                })
             }
          }
@@ -43,6 +45,7 @@ const getChats = (lists, email) => {
                id: v4(),
                email: i.from,
                messageLists: [i],
+               hasNewMessage: false,
             })
          }
       }

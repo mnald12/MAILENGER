@@ -10,10 +10,10 @@ import {
 } from '../methods/webRTCHandler'
 
 const AudioCall = ({ vData }) => {
-   const { data, setMode } = useContext(Data)
+   const { data, current, setMode } = useContext(Data)
 
    const back = async () => {
-      setMode({ mode: 'welcome' })
+      setMode({ mode: current.mode, conversation: current.conversation })
       document.getElementById('sidebar').style.opacity = '1'
       document.getElementById('sidebar').style.pointerEvents = 'auto'
       offCam()

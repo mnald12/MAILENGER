@@ -1,3 +1,5 @@
+import getGroupChats from './getGroupChats'
+
 const getGroups = async (email) => {
    let groups = []
    let options = {
@@ -8,27 +10,32 @@ const getGroups = async (email) => {
       .then((res) => {
          let group = []
          for (let i of res) {
-            if (i.creator === email) {
-               group.push(i)
-            } else {
-               let isIncluded = false
-               for (let m of i.members) {
-                  if (m === email) {
-                     isIncluded = true
-                     break
-                  }
-               }
-               if (isIncluded) {
-                  group.push(i)
+            let isIncluded = false
+            for (let m of i.members) {
+               if (m === email) {
+                  isIncluded = true
+                  break
                }
             }
+            if (isIncluded) {
+               const msgs = getGroupChats(i.groupId)
+               msgs.then((res) => {
+                  group.push({
+                     _id: i._id,
+                     groupId: i.groupId,
+                     groupName: i.groupName,
+                     creator: i.creator,
+                     members: i.members,
+                     chatLists: res,
+                     hasNewMessage: false,
+                  })
+               })
+            }
          }
-         console.log(group)
          return group
       })
       .then((group) => (groups = group))
       .catch(console.error)
-   console.log(groups)
    return groups
 }
 

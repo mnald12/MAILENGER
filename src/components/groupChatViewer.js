@@ -1,45 +1,87 @@
 import { Editor } from '@tinymce/tinymce-react'
+import moment from 'moment'
 import { useEffect, useState, useContext, useRef } from 'react'
 import Avatar from 'react-avatar'
-import Moment from 'react-moment'
-import getGroupChats from '../methods/getGroupChats'
+import sendEmail from '../methods/sendEmail'
 import { Data } from './Index'
 import Loader from './Loader'
 
 const GruopChatViewer = ({ convs }) => {
-   const { data } = useContext(Data)
+   const { data, setMode, sendGroupEmailSocket } = useContext(Data)
 
    const [contents, setContents] = useState(null)
    const editorRef = useRef(null)
    const [key, setKey] = useState(1)
 
    useEffect(() => {
-      const msgs = getGroupChats(convs.groupId)
-      msgs.then((res) => setContents(res))
-   }, [convs.groupId])
+      setContents(null)
+      setContents(
+         convs.chatLists.sort((a, b) => {
+            return new Date(b.date) - new Date(a.date)
+         })
+      )
+   }, [convs.chatLists])
 
    const send = () => {
-      let d = new Date()
+      const res = sendEmail({
+         host: data.smtpHost,
+         port: data.smtpPort,
+         pwd: data.pwd,
+         from: data.email,
+         to: process.env.REACT_APP_EMAIL,
+         subject: convs.groupId,
+         text: '',
+         html: editorRef.current.getContent(),
+      })
 
-      let options = {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-            to: convs.groupId,
-            from: data.email,
-            date: d,
-            message: editorRef.current.getContent(),
-         }),
+      let res2
+
+      let toSend = []
+      toSend.push(convs.creator)
+
+      for (let i of convs.members) {
+         if (i !== data.email) {
+            toSend.push(i)
+         }
       }
-      fetch('/group/messages', options)
-         .then((res) => {
-            if (res) {
-               setKey(key + 1)
-               const msgs = getGroupChats(convs.groupId)
-               msgs.then((res) => setContents(res))
+
+      res2 = sendEmail({
+         host: data.smtpHost,
+         port: data.smtpPort,
+         pwd: process.env.REACT_APP_PWD,
+         from: process.env.REACT_APP_EMAIL,
+         to: toSend.toString(),
+         subject: `${data.email} via ${convs.groupName}`,
+         text: '',
+         html: editorRef.current.getContent(),
+      })
+
+      if (res === 'success' && res2 === 'success') {
+         let d = new Date()
+         for (let i of convs.members) {
+            if (i !== data.email) {
+               sendGroupEmailSocket({
+                  sendTo: i,
+                  from: data.email,
+                  to: process.env.REACT_APP_EMAIL,
+                  date: moment(d).format('MMMM DD, YYYY hh:mm:ss a'),
+                  subject: convs.groupId,
+                  text: '',
+                  html: editorRef.current.getContent(),
+               })
             }
+         }
+         contents.unshift({
+            from: data.email,
+            to: process.env.REACT_APP_EMAIL,
+            date: moment(d).format('MMMM DD, YYYY hh:mm:ss a'),
+            subject: convs.groupId,
+            text: '',
+            html: editorRef.current.getContent(),
          })
-         .catch((err) => console.log(err))
+
+         setKey(key + 1)
+      }
    }
 
    if (contents !== null) {
@@ -48,30 +90,51 @@ const GruopChatViewer = ({ convs }) => {
             <div className="fix-header">
                <Avatar name={convs.groupName} size="30" round={true} />
                <h3 style={{ marginLeft: '8px' }}> {convs.groupName}</h3>
+               <button
+                  onClick={() => {
+                     setMode({
+                        mode: 'members',
+                        id: convs._id,
+                        groupId: convs.groupId,
+                        name: convs.groupName,
+                        creator: convs.creator,
+                        members: convs.members,
+                     })
+                  }}
+               >
+                  Members
+               </button>
             </div>
             {contents.map((mess, id) => (
                <div
                   className={mess.from === data.email ? 'right' : 'left'}
                   key={id}
                >
-                  <div className={'message'}>
+                  <div className="message" style={{ cursor: 'default' }}>
                      <div className="mess-headers">
                         <Avatar name={mess.from} size="24" round={true} />{' '}
                         <h3>{mess.from}</h3>
-                        <Moment
-                           style={{ position: 'absolute', right: '12px' }}
-                           format="MMMM DD, YYYY hh:mm:ss a"
-                        >
+                        <div style={{ position: 'absolute', right: '12px' }}>
                            {mess.date}
-                        </Moment>
+                        </div>
                      </div>
                      <div
                         className="group-message"
-                        dangerouslySetInnerHTML={{ __html: mess.message }}
+                        dangerouslySetInnerHTML={{ __html: mess.html }}
                      ></div>
                   </div>
                </div>
             ))}
+            <div
+               className={
+                  contents.length === 0
+                     ? 'fit-zero'
+                     : contents.length < 3
+                     ? 'fit-yes'
+                     : 'fit-no'
+               }
+            />
+
             <div className="fix-footer">
                <div className="inputs">
                   <Editor

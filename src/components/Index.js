@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import Displayer from './Displayer'
-import '../css/CallModal.css'
 import '../css/Content.css'
 import '../css/Create.css'
 import '../css/Home.css'
@@ -19,6 +18,9 @@ import {
    onReject,
    setSocket,
 } from '../methods/webRTCHandler'
+import moment from 'moment'
+import Notif from './Notif'
+
 const socket = io.connect('http://localhost:4000')
 
 const Data = React.createContext(null)
@@ -26,41 +28,51 @@ const Data = React.createContext(null)
 const maxHeight = window.innerHeight
 
 const Index = () => {
-   const [data, setData] = useState(null)
-   const [isLogIn, setLogin] = useState(false)
+   const [data, setData] = useState(
+      JSON.parse(window.sessionStorage.getItem('datas'))
+   )
+   const [isLogIn, setLogin] = useState(
+      window.sessionStorage.getItem('islogin')
+   )
    const [isLoaded, setIsLoaded] = useState(false)
-   const [message, setMessage] = useState([])
-   const [list, setList] = useState([])
-   const [sentMessage, setSentMessage] = useState([])
    const [chats, setChats] = useState([])
    const [groups, setGroups] = useState([])
    const [mailMode, setMailMode] = useState(null)
    const [mode, setMode] = useState({
       mode: 'welcome',
    })
-   const [hasNext, setHasNext] = useState(null)
-   const [isInbox, setIsInbox] = useState(true)
    const [isToView, setIsToView] = useState(null)
    const [current, setCurrent] = useState(null)
-
+   const [notifs, setNotifs] = useState(null)
    const logout = () => {
       setData(null)
       setLogin(false)
       setIsLoaded(false)
-      setMessage([])
-      setList([])
-      setSentMessage([])
       setChats([])
       setGroups([])
       setMailMode(null)
       setMode({ mode: 'welcome' })
-      setHasNext(null)
-      setIsInbox(true)
       setIsToView(null)
+      window.sessionStorage.setItem('islogin', false)
+      window.sessionStorage.setItem('datas', null)
    }
 
+   const [isGroupLoaded, setGroupIsLoaded] = useState(false)
+
    const setActive = (id) => {
-      for (let i = 0; i < message.length; i++) {
+      console.log(id)
+      for (let i = 0; i < chats.length; i++) {
+         if (i === id) {
+            document.getElementById(id).classList.add('active')
+         } else {
+            document.getElementById(i).classList.remove('active')
+         }
+      }
+   }
+
+   const setActive2 = (id) => {
+      console.log(id)
+      for (let i = 0; i < groups.length; i++) {
          if (i === id) {
             document.getElementById(id).classList.add('active')
          } else {
@@ -70,7 +82,7 @@ const Index = () => {
    }
 
    const setNavActive = (id) => {
-      const selections = ['email', 'chat', 'create', 'group']
+      const selections = ['chat', 'create', 'group']
       for (let i of selections) {
          if (i === id) {
             document.getElementById(i).classList.add('active')
@@ -91,6 +103,76 @@ const Index = () => {
       })
       return ID
    }
+
+   const sendEmailSocket = (data) => {
+      socket.emit('send-email', data)
+   }
+
+   const onRecieveEmail = (data) => {
+      console.log(chats)
+      const currentChat = chats.find((c) => c.email === data.from)
+      const prevChats = chats.filter((c) => c.email !== data.from)
+      console.log(currentChat)
+      if (currentChat) {
+         setNotifs(data.from + ' message you')
+         const obj = {
+            name: '',
+            from: data.from,
+            to: data.to,
+            date: moment(data.date).format('MMMM DD, YYYY hh:mm:ss a'),
+            subject: data.subject,
+            text: data.text,
+            html: data.html,
+         }
+         currentChat.hasNewMessage = true
+         currentChat.messageLists.unshift(obj)
+         setChats([...prevChats, currentChat])
+      }
+   }
+
+   const sendGroupEmailSocket = (data) => {
+      socket.emit('send-group-email', data)
+   }
+
+   const onRecieveGroupEmail = (data) => {
+      const currentChat = groups.find((c) => c.groupId === data.subject)
+      const prevChats = groups.filter((c) => c.groupId !== data.subject)
+      console.log(currentChat)
+      if (currentChat) {
+         setNotifs(data.from + ' has new message from group')
+         const obj = {
+            from: data.from,
+            to: data.to,
+            date: data.date,
+            subject: data.subject,
+            text: data.text,
+            html: data.html,
+         }
+         currentChat.hasNewMessage = true
+         currentChat.chatLists.unshift(obj)
+         setGroups([...prevChats, currentChat])
+      }
+   }
+
+   useEffect(() => {
+      socket.on('recieve-email', (data) => {
+         onRecieveEmail(data)
+      })
+      return () => {
+         socket.off('recieve-email')
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [chats])
+
+   useEffect(() => {
+      socket.on('recieve-group-email', (data) => {
+         onRecieveGroupEmail(data)
+      })
+      return () => {
+         socket.off('recieve-group-email')
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [groups])
 
    useEffect(() => {
       setSocket(socket)
@@ -152,13 +234,9 @@ const Index = () => {
             isLoaded,
             setIsLoaded,
             logout,
-            message,
-            setMessage,
-            list,
-            setList,
-            sentMessage,
-            setSentMessage,
             chats,
+            sendEmailSocket,
+            sendGroupEmailSocket,
             setChats,
             groups,
             setGroups,
@@ -168,17 +246,18 @@ const Index = () => {
             setMode,
             setNavActive,
             setActive,
-            hasNext,
-            setHasNext,
-            isInbox,
-            setIsInbox,
+            setActive2,
             isToView,
             setIsToView,
             current,
             setCurrent,
+            setNotifs,
             getID,
+            isGroupLoaded,
+            setGroupIsLoaded,
          }}
       >
+         <Notif notification={notifs} />
          <Displayer />
       </Data.Provider>
    )

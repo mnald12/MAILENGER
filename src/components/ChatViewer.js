@@ -1,4 +1,5 @@
 import { Editor } from '@tinymce/tinymce-react'
+import moment from 'moment'
 import { useEffect, useState, useContext, useRef } from 'react'
 import Avatar from 'react-avatar'
 import sendEmail from '../methods/sendEmail'
@@ -13,7 +14,9 @@ const ChatViewer = ({ convs }) => {
       isToView,
       setIsToView,
       setMode,
+      current,
       setCurrent,
+      sendEmailSocket,
    } = useContext(Data)
 
    const [contents, setContents] = useState(null)
@@ -36,15 +39,24 @@ const ChatViewer = ({ convs }) => {
       })
 
       if (res === 'success') {
+         sendEmailSocket({
+            from: data.email,
+            date: moment().valueOf(),
+            to: convs.email,
+            subject: subs,
+            html: editorRef.current.getContent(),
+         })
          setSubs('')
          setKey(key + 1)
 
+         let d = new Date()
          setChats(() => {
             return chats.map((c) => {
                if (c.id === convs.id) {
-                  c.messageLists.push({
+                  c.messageLists.unshift({
                      from: data.email,
                      to: convs.email,
+                     date: moment(d).format('MMMM DD, YYYY hh:mm:ss a'),
                      subject: subs,
                      text: '',
                      html: editorRef.current.getContent(),
@@ -65,8 +77,15 @@ const ChatViewer = ({ convs }) => {
    }
 
    useEffect(() => {
-      document.getElementById('main-content').scrollTop = 0
-   }, [mode])
+      if (current) {
+         setTimeout(() => {
+            document.getElementById('main-content').scrollTop =
+               current.scrollPos
+         }, 100)
+      } else {
+         document.getElementById('main-content').scrollTop = 0
+      }
+   }, [current, mode])
 
    useEffect(() => {
       setIsToView(null)
@@ -102,10 +121,11 @@ const ChatViewer = ({ convs }) => {
                      onClick={() => {
                         setCurrent({
                            mode: 'chat-view',
-                           conversations: convs,
+                           conversation: convs,
                            scrollPos:
                               document.getElementById('main-content').scrollTop,
                         })
+                        console.log(current)
                         setMode({
                            mode: 'audio-call',
                            type: 'callee',
@@ -130,10 +150,11 @@ const ChatViewer = ({ convs }) => {
                      onClick={() => {
                         setCurrent({
                            mode: 'chat-view',
-                           conversations: convs,
+                           conversation: convs,
                            scrollPos:
                               document.getElementById('main-content').scrollTop,
                         })
+                        console.log(current)
                         setMode({
                            mode: 'video-call',
                            type: 'caller',
@@ -171,17 +192,27 @@ const ChatViewer = ({ convs }) => {
                            setIsToView(mess.html)
                         }}
                      >
-                        <i>{mess.date}</i>
-                        <br />
-                        <br />
-                        <h3>{mess.subject}</h3>
+                        <i style={{ color: 'black' }}>{mess.date}</i>
+                        <hr
+                           style={{ marginBottom: '10px', marginTop: '10px' }}
+                        />
+                        <h3>{mess.subject ? mess.subject : 'No subject'}</h3>
                         <br />
                         <h5>
-                           {mess.text ? mess.text.substring(0, 200) : ''}...
+                           {mess.text ? (
+                              mess.text.substring(0, 200)
+                           ) : (
+                              <div
+                                 dangerouslySetInnerHTML={{ __html: mess.html }}
+                              ></div>
+                           )}
                         </h5>
                      </div>
                   </div>
                ))}
+               <div
+                  className={contents.length < 3 ? 'fit-yes' : 'fit-no'}
+               ></div>
                <div className="fix-footer">
                   <div className="inputs">
                      <input

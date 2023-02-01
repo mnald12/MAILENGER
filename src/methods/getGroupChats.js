@@ -3,12 +3,15 @@ const getGroupChats = async (id) => {
    let options = {
       method: 'GET',
    }
-   await fetch('/group/messages', options)
+   await fetch(
+      `/group/messages/${process.env.REACT_APP_EMAIL}/${process.env.REACT_APP_PWD}/imap.gmail.com/993`,
+      options
+   )
       .then((response) => response.json())
       .then((res) => {
          let message = []
          for (let i of res) {
-            if (i.to === id) {
+            if (i.subject === id) {
                message.push(i)
             }
          }

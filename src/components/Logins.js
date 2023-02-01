@@ -2,15 +2,16 @@ import logo from '../images/mylogo.png'
 import { useContext, useState } from 'react'
 import { Data } from './Index'
 import getChats from '../methods/getChats'
-import getMessages from '../methods/getMess'
+//import getMessages from '../methods/getMess'
 import getGroups from '../methods/getGroups'
+import getChats2 from '../methods/getChats2'
+//import getMessages2 from '../methods/getMess2'
 
 const intros = [
    'Not just an Email!',
    'Turn your Email into Chat',
    'A smarter Inbox',
    'Chat with anyone, anywhere',
-   'Real time chat, real time results',
 ]
 
 const intro = intros[Math.floor(Math.random() * intros.length)]
@@ -21,11 +22,10 @@ const Logins = () => {
       addEmailToSocket,
       setLogin,
       setIsLoaded,
-      setList,
+      chats,
       setChats,
-      setMessage,
-      setSentMessage,
       setGroups,
+      setGroupIsLoaded,
    } = useContext(Data)
 
    const [signup, setSignUp] = useState(false)
@@ -37,25 +37,75 @@ const Logins = () => {
    const [sport, setsPort] = useState('465')
 
    const getEmails = async () => {
-      let options = {
-         method: 'GET',
+      let init = 1
+      let end = 100
+      let limit
+      let fetched
+      let done = false
+      let firstAttempt = true
+
+      let chs
+
+      while (!done) {
+         let options = {
+            method: 'GET',
+         }
+         if (firstAttempt) {
+            await fetch(
+               `/users2/${email}/${pwd}/${host}/${port}/${init}/${end}`,
+               options
+            )
+               .then((response) => response.json())
+               // eslint-disable-next-line no-loop-func
+               .then((res) => {
+                  limit = res.total
+                  const chat = getChats(res.messages, email)
+                  setChats(chat)
+                  chs = chat
+                  setIsLoaded(true)
+                  window.sessionStorage.setItem('isloaded', true)
+                  addEmailToSocket(email)
+                  if (res.total < end) {
+                     done = true
+                  } else {
+                     init += 100
+                     end += 100
+                  }
+                  fetched = res.messages.length
+                  firstAttempt = false
+               })
+               .catch(console.error)
+         } else {
+            await fetch(
+               `/users2/${email}/${pwd}/${host}/${port}/${init}/${end}`,
+               options
+            )
+               .then((response) => response.json())
+               // eslint-disable-next-line no-loop-func
+               .then((res) => {
+                  if (chats) {
+                     const newChat = getChats2(
+                        res.messages,
+                        chs,
+                        email,
+                        res.total
+                     )
+                     chs = newChat
+                     setChats([...newChat])
+                  }
+
+                  fetched += res.messages.length
+
+                  if (limit === fetched) {
+                     done = true
+                  } else {
+                     init += 100
+                     end += 100
+                  }
+               })
+               .catch(console.error)
+         }
       }
-      await fetch(`/users2/${email}/${pwd}/${host}/${port}`, options)
-         .then((response) => response.json())
-         .then((res) => {
-            const chat = getChats(res, email)
-            setList(res)
-            console.log(chat)
-            setChats(chat)
-            const emails = getMessages(res, email)
-            setMessage(emails.inbox)
-            setSentMessage(emails.sent)
-            setIsLoaded(true)
-            addEmailToSocket(email)
-            const grps = getGroups(email)
-            grps.then((res) => setGroups(res))
-         })
-         .catch(console.error)
    }
 
    if (signup) {
@@ -110,16 +160,28 @@ const Logins = () => {
                      <button
                         className="submit"
                         onClick={() => {
-                           setData({
+                           const datas = {
                               email: email,
                               pwd: pwd,
                               imapHost: host,
                               imapPort: port,
                               smtpHost: shost,
                               smtpPort: sport,
-                           })
+                           }
+                           setData(datas)
+                           window.sessionStorage.setItem(
+                              'datas',
+                              JSON.stringify(datas)
+                           )
                            setLogin(true)
+                           window.sessionStorage.setItem('islogin', true)
                            getEmails()
+
+                           const grps = getGroups(email)
+                           grps.then((res) => {
+                              setGroups(res)
+                              setGroupIsLoaded(true)
+                           })
                         }}
                      >
                         Login

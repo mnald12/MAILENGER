@@ -1,7 +1,5 @@
 import '../css/Content.css'
 import Create from './Create'
-import Message from './Message'
-import SentView from './SentView'
 import ChatViewer from './ChatViewer'
 import logo from '../images/mylogo.png'
 import VideoCall from './VideoCall'
@@ -10,6 +8,7 @@ import CreateGroup from './CreateGroup'
 import IncomingAudioCall from './IncomingAudioCall'
 import AudioCall from './AudioCall'
 import GruopChatViewer from './groupChatViewer'
+import Members from './Members'
 const Content = ({ contents }) => {
    if (contents.mode === 'welcome') {
       return (
@@ -21,18 +20,6 @@ const Content = ({ contents }) => {
       )
    } else if (contents.mode === 'group') {
       return <div className="main-content">Hello Group</div>
-   } else if (contents.mode === 'message') {
-      return (
-         <div className="main-content">
-            <Message datas={contents.data} />
-         </div>
-      )
-   } else if (contents.mode === 'sentMessage') {
-      return (
-         <div className="main-content">
-            <SentView data={contents.data} />
-         </div>
-      )
    } else if (contents.mode === 'create') {
       const data = {
          id: contents.id,
@@ -102,6 +89,19 @@ const Content = ({ contents }) => {
       return (
          <div className="main-content">
             <GruopChatViewer convs={contents.messages} />
+         </div>
+      )
+   } else if (contents.mode === 'members') {
+      const data = {
+         id: contents.id,
+         groupId: contents.groupId,
+         name: contents.name,
+         creator: contents.creator,
+         members: contents.members,
+      }
+      return (
+         <div className="main-content">
+            <Members members={data} />
          </div>
       )
    }

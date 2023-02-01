@@ -1,21 +1,22 @@
 import { useState, useContext } from 'react'
 import { v4 } from 'uuid'
-import getGroups from '../methods/getGroups'
 import { Data } from './Index'
 
 const CreateGroup = () => {
-   const { data, setGroups } = useContext(Data)
+   const { data, groups, setGroups } = useContext(Data)
 
    const [name, setName] = useState('')
    const [member, setMember] = useState('')
 
    const saveGroup = () => {
+      const GID = v4()
       const members = member.split(' ')
+      members.push(data.email)
       let options = {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({
-            groupId: v4(),
+            groupId: GID,
             groupName: name,
             creator: data.email,
             members: members,
@@ -24,11 +25,20 @@ const CreateGroup = () => {
       fetch('/group', options)
          .then((res) => res.json())
          .then((res) => {
-            console.log(res)
+            setGroups([
+               ...groups,
+               {
+                  _id: '',
+                  groupId: GID,
+                  groupName: name,
+                  creator: data.email,
+                  members: members,
+                  chatLists: [],
+                  hasNewMessage: false,
+               },
+            ])
             setName('')
             setMember('')
-            const grps = getGroups(data.email)
-            grps.then((res) => setGroups(res))
          })
          .catch((err) => console.log(err))
    }
@@ -45,7 +55,9 @@ const CreateGroup = () => {
                   onChange={(e) => setMember(e.target.value)}
                   placeholder="add space to multiple address"
                />
-               <button onClick={() => saveGroup()}>Create</button>
+               <button onClick={() => saveGroup()} disabled={!name}>
+                  Create
+               </button>
             </div>
          </div>
       </>
