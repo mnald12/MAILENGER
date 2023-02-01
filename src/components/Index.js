@@ -21,7 +21,7 @@ import {
 import moment from 'moment'
 import Notif from './Notif'
 
-const socket = io.connect('http://localhost:3003')
+const socket = io.connect('http://localhost:9002')
 
 const Data = React.createContext(null)
 
