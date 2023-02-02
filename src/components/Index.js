@@ -21,7 +21,7 @@ import {
 import moment from 'moment'
 import Notif from './Notif'
 
-const socket = io.connect('http://143.198.122.46:9000')
+const socket = io.connect('https://tmqphiltraining.freeddns.org')
 
 const Data = React.createContext(null)
 
