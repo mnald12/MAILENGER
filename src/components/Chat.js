@@ -1,13 +1,9 @@
 import { useContext } from 'react'
 import { Data } from './Index'
 import Avatar from 'react-avatar'
-import { useEffect } from 'react'
 
 const Chat = ({ chat }) => {
    const { setMode, setActive, setNavActive } = useContext(Data)
-   useEffect(() => {
-      console.log(chat)
-   })
    return (
       <>
          {chat.map((people, id) => (

@@ -51,7 +51,6 @@ const Members = ({ members }) => {
       fetch(`/group/${members.id}`, options)
          .then((res) => res.json())
          .then((res) => {
-            console.log(res)
             setMember('')
             setMode({ mode: 'welcome' })
             handleRemoveItem()

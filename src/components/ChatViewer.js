@@ -125,7 +125,6 @@ const ChatViewer = ({ convs }) => {
                            scrollPos:
                               document.getElementById('main-content').scrollTop,
                         })
-                        console.log(current)
                         setMode({
                            mode: 'audio-call',
                            type: 'callee',
@@ -154,7 +153,6 @@ const ChatViewer = ({ convs }) => {
                            scrollPos:
                               document.getElementById('main-content').scrollTop,
                         })
-                        console.log(current)
                         setMode({
                            mode: 'video-call',
                            type: 'caller',

@@ -18,8 +18,6 @@ const setSocket = (value) => {
    socket = value
 }
 
-console.log(12)
-
 let localVideo
 let remoteVideo
 
@@ -64,7 +62,6 @@ const initCam = async (mode) => {
          localStream = stream
 
          localVideo.srcObject = localStream
-         console.log(localStream, '1')
       })
       .catch((error) => console.error(error))
 }
@@ -106,8 +103,6 @@ const callee = async (id, description) => {
 }
 
 const onOffer = (id, description) => {
-   console.log('offer came')
-   console.log(id, description)
    callerID = id
    commingDescription = description
 }
@@ -181,7 +176,6 @@ const accept = () => {
 
 const decline = () => {
    socket.emit('reject-call', callerID)
-   console.log(callerID)
    close()
    rejectDialog()
 }

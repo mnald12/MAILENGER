@@ -1,6 +1,5 @@
 import { v4 } from 'uuid'
 const getChats = (lists, email) => {
-   console.log(lists)
    let chatList = []
    let waiting = []
 

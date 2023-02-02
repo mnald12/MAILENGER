@@ -24,8 +24,6 @@ const Create = () => {
          html: editorRef.current.getContent(),
       })
 
-      console.log(res)
-
       if (res === 'success') {
          setKey(key + 1)
          setTo('')

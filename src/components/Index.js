@@ -21,7 +21,7 @@ import {
 import moment from 'moment'
 import Notif from './Notif'
 
-const socket = io.connect('http://localhost:9002')
+const socket = io.connect('http://143.198.122.46:9000')
 
 const Data = React.createContext(null)
 
@@ -60,7 +60,6 @@ const Index = () => {
    const [isGroupLoaded, setGroupIsLoaded] = useState(false)
 
    const setActive = (id) => {
-      console.log(id)
       for (let i = 0; i < chats.length; i++) {
          if (i === id) {
             document.getElementById(id).classList.add('active')
@@ -71,7 +70,6 @@ const Index = () => {
    }
 
    const setActive2 = (id) => {
-      console.log(id)
       for (let i = 0; i < groups.length; i++) {
          if (i === id) {
             document.getElementById(id).classList.add('active')
@@ -109,10 +107,8 @@ const Index = () => {
    }
 
    const onRecieveEmail = (data) => {
-      console.log(chats)
       const currentChat = chats.find((c) => c.email === data.from)
       const prevChats = chats.filter((c) => c.email !== data.from)
-      console.log(currentChat)
       if (currentChat) {
          setNotifs(data.from + ' message you')
          const obj = {
@@ -137,7 +133,6 @@ const Index = () => {
    const onRecieveGroupEmail = (data) => {
       const currentChat = groups.find((c) => c.groupId === data.subject)
       const prevChats = groups.filter((c) => c.groupId !== data.subject)
-      console.log(currentChat)
       if (currentChat) {
          setNotifs(data.from + ' has new message from group')
          const obj = {
@@ -201,7 +196,6 @@ const Index = () => {
       })
 
       socket.on('reject', () => {
-         console.log('rejects')
          onReject()
       })
 
