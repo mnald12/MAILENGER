@@ -16,6 +16,9 @@ const getChats2 = (lists, chatList, email) => {
          for (let l = 0; l < chatList.length; l++) {
             if (chatList[l].email === i.from) {
                chatList[l].messageLists.push(i)
+               if (new Date(chatList[l].date) < new Date(i.date)) {
+                  chatList[l].date = i.date
+               }
                break
             } else {
                if (l === chatList.length - 1) {
@@ -41,7 +44,7 @@ const getChats2 = (lists, chatList, email) => {
          for (let c of chatList) {
             if (c.email === w.to) {
                c.messageLists.push(w)
-               if (c.date < w.date) {
+               if (new Date(c.date) < new Date(w.date)) {
                   c.date = w.date
                }
                break

@@ -12,13 +12,13 @@ const getChats = (lists, email) => {
 
       if (chatList.length > 0) {
          if (isMe) {
-            waiting.push(i)
+            waiting.unshift(i)
          } else {
             let notInList = false
             for (let l = 0; l < chatList.length; l++) {
                if (chatList[l].email === i.from) {
                   chatList[l].messageLists.push(i)
-                  if (chatList[l].date < i.date) {
+                  if (new Date(chatList[l].date) < new Date(i.date)) {
                      chatList[l].date = i.date
                   }
                   break
@@ -60,7 +60,7 @@ const getChats = (lists, email) => {
          for (let c of chatList) {
             if (c.email === w.to) {
                c.messageLists.push(w)
-               if (c.date < w.date) {
+               if (new Date(c.date) < new Date(w.date)) {
                   c.date = w.date
                }
                break

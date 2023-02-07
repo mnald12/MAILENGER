@@ -72,6 +72,8 @@ const GruopChatViewer = ({ convs }) => {
             }
          }
 
+         convs.date = moment(d).format('MMMM DD, YYYY hh:mm:ss a')
+
          contents.unshift({
             from: data.email,
             to: process.env.REACT_APP_EMAIL,

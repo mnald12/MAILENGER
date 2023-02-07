@@ -28,6 +28,7 @@ const getGroups = async (email) => {
                      members: i.members,
                      chatLists: res,
                      hasNewMessage: false,
+                     date: res[res.length - 1].date,
                   })
                })
             }
