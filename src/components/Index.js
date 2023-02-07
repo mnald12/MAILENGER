@@ -193,7 +193,7 @@ const Index = () => {
          onReady()
       })
 
-      socket.on('answer', async (answer) => {
+      socket.on('answer', (answer) => {
          onAnswer(answer)
       })
 
@@ -214,7 +214,15 @@ const Index = () => {
       })
 
       return () => {
-         socket.off('call-incoming')
+         socket.off('candidate')
+         socket.off('calling')
+         socket.off('offer')
+         socket.off('ready')
+         socket.off('answer')
+         socket.off('reject')
+         socket.off('aborted')
+         socket.off('close')
+         socket.off('close2')
       }
    }, [])
 
