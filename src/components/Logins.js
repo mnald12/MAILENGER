@@ -138,21 +138,25 @@ const Logins = () => {
                   <label>IMAP Host :</label>
                   <input
                      value={host}
+                     disabled
                      onChange={(e) => setHost(e.target.value)}
                   ></input>
                   <label>IMAP Port :</label>
                   <input
                      value={port}
+                     disabled
                      onChange={(e) => setPort(e.target.value)}
                   ></input>
                   <label>SMTP Host :</label>
                   <input
                      value={shost}
+                     disabled
                      onChange={(e) => setsHost(e.target.value)}
                   ></input>
                   <label>SMTP Port :</label>
                   <input
                      value={sport}
+                     disabled
                      onChange={(e) => setsPort(e.target.value)}
                   ></input>
                   <div className="action-form">
