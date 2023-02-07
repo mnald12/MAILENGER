@@ -18,6 +18,9 @@ const getChats = (lists, email) => {
             for (let l = 0; l < chatList.length; l++) {
                if (chatList[l].email === i.from) {
                   chatList[l].messageLists.push(i)
+                  if (chatList[l].date < i.date) {
+                     chatList[l].date = i.date
+                  }
                   break
                } else {
                   if (l === chatList.length - 1) {
@@ -32,6 +35,7 @@ const getChats = (lists, email) => {
                   email: i.from,
                   messageLists: [i],
                   hasNewMessage: false,
+                  date: i.date,
                })
             }
          }
@@ -45,6 +49,7 @@ const getChats = (lists, email) => {
                email: i.from,
                messageLists: [i],
                hasNewMessage: false,
+               date: i.date,
             })
          }
       }
@@ -55,6 +60,9 @@ const getChats = (lists, email) => {
          for (let c of chatList) {
             if (c.email === w.to) {
                c.messageLists.push(w)
+               if (c.date < w.date) {
+                  c.date = w.date
+               }
                break
             }
          }

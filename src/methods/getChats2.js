@@ -29,6 +29,7 @@ const getChats2 = (lists, chatList, email) => {
                id: v4(),
                email: i.from,
                messageLists: [i],
+               date: i.date,
                hasNewMessage: false,
             })
          }
@@ -40,6 +41,9 @@ const getChats2 = (lists, chatList, email) => {
          for (let c of chatList) {
             if (c.email === w.to) {
                c.messageLists.push(w)
+               if (c.date < w.date) {
+                  c.date = w.date
+               }
                break
             }
          }

@@ -25,8 +25,10 @@ const Logins = () => {
       chats,
       setChats,
       setGroups,
-      setGroupIsLoaded,
+      setNotifs,
    } = useContext(Data)
+
+   const [isDisabled, setIsDisabled] = useState(false)
 
    const [signup, setSignUp] = useState(false)
    const [email, setEmail] = useState('')
@@ -158,30 +160,50 @@ const Logins = () => {
                         Back
                      </button>
                      <button
+                        disabled={isDisabled}
                         className="submit"
                         onClick={() => {
-                           const datas = {
-                              email: email,
-                              pwd: pwd,
-                              imapHost: host,
-                              imapPort: port,
-                              smtpHost: shost,
-                              smtpPort: sport,
+                           setIsDisabled(true)
+                           let options = {
+                              method: 'GET',
                            }
-                           setData(datas)
-                           window.sessionStorage.setItem(
-                              'datas',
-                              JSON.stringify(datas)
+                           fetch(
+                              `/user/${email}/${pwd}/${host}/${port}`,
+                              options
                            )
-                           setLogin(true)
-                           window.sessionStorage.setItem('islogin', true)
-                           getEmails()
-
-                           const grps = getGroups(email)
-                           grps.then((res) => {
-                              setGroups(res)
-                              setGroupIsLoaded(true)
-                           })
+                              .then((res) => res.json())
+                              .then((res) => {
+                                 if (res.success) {
+                                    const datas = {
+                                       email: email,
+                                       pwd: pwd,
+                                       imapHost: host,
+                                       imapPort: port,
+                                       smtpHost: shost,
+                                       smtpPort: sport,
+                                    }
+                                    setData(datas)
+                                    window.sessionStorage.setItem(
+                                       'datas',
+                                       JSON.stringify(datas)
+                                    )
+                                    setLogin(true)
+                                    window.sessionStorage.setItem(
+                                       'islogin',
+                                       true
+                                    )
+                                    getEmails()
+                                    const grps = getGroups(email)
+                                    grps.then((res) => {
+                                       setGroups(res)
+                                    })
+                                    setIsDisabled(false)
+                                 } else {
+                                    setNotifs('wrong email or password')
+                                    setIsDisabled(false)
+                                 }
+                                 return
+                              })
                         }}
                      >
                         Login

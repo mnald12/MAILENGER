@@ -9,7 +9,6 @@ const ChatViewer = ({ convs }) => {
    const {
       mode,
       data,
-      chats,
       setChats,
       isToView,
       setIsToView,
@@ -47,22 +46,22 @@ const ChatViewer = ({ convs }) => {
       if (res === 'success') {
          sendEmailSocket({
             from: data.email,
-            date: moment().valueOf(),
+            date: moment().format('MMMM DD, YYYY hh:mm:ss a'),
             to: convs.email,
             subject: subs,
             html: editorRef.current.getContent(),
          })
          setSubs('')
          setKey(key + 1)
-         let d = new Date()
 
-         setChats(() => {
-            return chats.map((c) => {
+         setChats((prevChats) => {
+            return prevChats.map((c) => {
                if (c.id === convs.id) {
+                  c.date = moment().format('MMMM DD, YYYY hh:mm:ss a')
                   c.messageLists.unshift({
                      from: data.email,
                      to: convs.email,
-                     date: moment(d).format('MMMM DD, YYYY hh:mm:ss a'),
+                     date: moment().format('MMMM DD, YYYY hh:mm:ss a'),
                      subject: subs,
                      text: '',
                      html: editorRef.current.getContent(),

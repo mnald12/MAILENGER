@@ -95,14 +95,6 @@ const Index = () => {
       socket.emit('save-user', socket.id, email)
    }
 
-   const getID = (email) => {
-      let ID
-      socket.emit('get-id', email, (id) => {
-         ID = id
-      })
-      return ID
-   }
-
    const sendEmailSocket = (data) => {
       socket.emit('send-email', data)
    }
@@ -256,7 +248,6 @@ const Index = () => {
             current,
             setCurrent,
             setNotifs,
-            getID,
             isGroupLoaded,
             setGroupIsLoaded,
          }}

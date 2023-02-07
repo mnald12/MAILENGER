@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { Data } from './Index'
 import Avatar from 'react-avatar'
 import Loader from './Loader'
@@ -6,6 +6,11 @@ import Loader from './Loader'
 const Group = () => {
    const { setMode, groups, setActive2, setNavActive, isGroupLoaded } =
       useContext(Data)
+   useEffect(() => {
+      groups.sort((a, b) => {
+         return new Date(b.date) - new Date(a.date)
+      })
+   }, [groups])
    if (isGroupLoaded) {
       return (
          <>
