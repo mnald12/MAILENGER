@@ -187,6 +187,7 @@ const close = () => {
 }
 
 const onAborted = () => {
+   audio.pause()
    onCallAbortedDialog()
    offCam()
 }

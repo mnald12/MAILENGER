@@ -21,7 +21,6 @@ const IncomingVideoCall = ({ caller }) => {
 
    useEffect(() => {
       getReady('video-call', caller.callerId)
-      console.log(caller.callerId)
       document.getElementById('sidebar').style.opacity = '0.50'
       document.getElementById('sidebar').style.pointerEvents = 'none'
       // eslint-disable-next-line react-hooks/exhaustive-deps
