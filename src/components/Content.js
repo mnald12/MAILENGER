@@ -52,6 +52,7 @@ const Content = ({ contents }) => {
       const data = {
          id: contents.id,
          name: contents.name,
+         callerId: contents.callerId,
       }
       return (
          <div className="main-content">
@@ -73,6 +74,7 @@ const Content = ({ contents }) => {
       const data = {
          id: contents.id,
          name: contents.name,
+         callerId: contents.callerId,
       }
       return (
          <div className="main-content">

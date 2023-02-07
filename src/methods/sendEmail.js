@@ -1,6 +1,5 @@
 const sendEmail = (dataToSend) => {
    let isSend = false
-   console.log(dataToSend)
    let options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

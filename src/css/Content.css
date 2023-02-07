@@ -327,6 +327,7 @@
    top: 180px;
    transition: 0.5s;
    box-shadow: 0 0 3px 0 black;
+   transform: translateY(400px);
 }
 .calling-dialog h3 {
    padding: 20px;

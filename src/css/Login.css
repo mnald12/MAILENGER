@@ -126,6 +126,16 @@ center {
    background-color: rgba(20, 111, 230, 0.892);
 }
 
+.submit:disabled,
+.submit[disabled] {
+   opacity: 0.4;
+}
+
+input:disabled,
+input[disabled] {
+   background: transparent;
+}
+
 @media (max-width: 575px) {
    #root {
       width: 100%;

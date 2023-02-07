@@ -17,6 +17,7 @@ const ChatViewer = ({ convs }) => {
       current,
       setCurrent,
       sendEmailSocket,
+      setNotifs,
    } = useContext(Data)
 
    const [contents, setContents] = useState(null)
@@ -27,6 +28,11 @@ const ChatViewer = ({ convs }) => {
    const [scrollPos, setScrollPos] = useState(null)
 
    const send = () => {
+      if (editorRef.current.getContent() === '') {
+         setNotifs('please add a message')
+         return
+      }
+
       const res = sendEmail({
          host: data.smtpHost,
          port: data.smtpPort,
@@ -48,8 +54,8 @@ const ChatViewer = ({ convs }) => {
          })
          setSubs('')
          setKey(key + 1)
-
          let d = new Date()
+
          setChats(() => {
             return chats.map((c) => {
                if (c.id === convs.id) {

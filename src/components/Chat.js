@@ -1,12 +1,24 @@
 import { useContext } from 'react'
 import { Data } from './Index'
 import Avatar from 'react-avatar'
+import { useState } from 'react'
+import { useEffect } from 'react'
 
 const Chat = ({ chat }) => {
    const { setMode, setActive, setNavActive } = useContext(Data)
+   const [chats, setChats] = useState([])
+
+   useEffect(() => {
+      setChats(
+         chat.sort((a, b) => {
+            return new Date(b.date) - new Date(a.date)
+         })
+      )
+   }, [chat])
+
    return (
       <>
-         {chat.map((people, id) => (
+         {chats.map((people, id) => (
             <button
                className={
                   people.hasNewMessage ? 'chat-list notifOn' : 'chat-list'

@@ -71,6 +71,7 @@ const GruopChatViewer = ({ convs }) => {
                })
             }
          }
+
          contents.unshift({
             from: data.email,
             to: process.env.REACT_APP_EMAIL,

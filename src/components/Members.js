@@ -2,14 +2,40 @@ import { useState, useContext } from 'react'
 import { Data } from './Index'
 
 const Members = ({ members }) => {
-   const { data, setMode, groups, setGroups } = useContext(Data)
+   const { data, setMode, groups, setGroups, setNotifs } = useContext(Data)
    const [member, setMember] = useState('')
 
    const handleRemoveItem = (e) => {
       setGroups(groups.filter((item) => item.groupName !== members.name))
    }
 
+   const checkEmail = (emailAddress) => {
+      const sQtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]'
+      const sDtext = '[^\\x0d\\x5b-\\x5d\\x80-\\xff]'
+      const sAtom =
+         '[^\\x00-\\x20\\x22\\x28\\x29\\x2c\\x2e\\x3a-\\x3c\\x3e\\x40\\x5b-\\x5d\\x7f-\\xff]+'
+      const sQuotedPair = '\\x5c[\\x00-\\x7f]'
+      const sDomainLiteral = '\\x5b(' + sDtext + '|' + sQuotedPair + ')*\\x5d'
+      const sQuotedString = '\\x22(' + sQtext + '|' + sQuotedPair + ')*\\x22'
+      const sDomain_ref = sAtom
+      const sSubDomain = '(' + sDomain_ref + '|' + sDomainLiteral + ')'
+      const sWord = '(' + sAtom + '|' + sQuotedString + ')'
+      const sDomain = sSubDomain + '(\\x2e' + sSubDomain + ')*'
+      const sLocalPart = sWord + '(\\x2e' + sWord + ')*'
+      const sAddrSpec = sLocalPart + '\\x40' + sDomain
+      const sValidEmail = '^' + sAddrSpec + '$'
+
+      const reValidEmail = new RegExp(sValidEmail)
+
+      return reValidEmail.test(emailAddress)
+   }
+
    const add = () => {
+      if (checkEmail(member) === false) {
+         setNotifs(`${member} is not a correct email`)
+         return
+      }
+
       members.members.push(member)
 
       let options = {
@@ -54,6 +80,7 @@ const Members = ({ members }) => {
             setMember('')
             setMode({ mode: 'welcome' })
             handleRemoveItem()
+            setNotifs('you successfully left the group')
          })
          .catch((err) => console.log(err))
    }
@@ -85,7 +112,15 @@ const Members = ({ members }) => {
                      placeholder="add 1 email at a time"
                      onChange={(e) => setMember(e.target.value)}
                   />
-                  <button onClick={() => add()} disabled={!member}>
+                  <button
+                     onClick={() => {
+                        if (member === '') {
+                           setNotifs('members is empty')
+                        } else {
+                           add()
+                        }
+                     }}
+                  >
                      Add
                   </button>
                </div>

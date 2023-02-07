@@ -15,13 +15,14 @@ import {
    onClose,
    onClose2,
    onOffer,
+   onReady,
    onReject,
    setSocket,
 } from '../methods/webRTCHandler'
 import moment from 'moment'
 import Notif from './Notif'
 
-const socket = io.connect('https://tmqphiltraining.freeddns.org')
+const socket = io.connect('/')
 
 const Data = React.createContext(null)
 
@@ -176,19 +177,28 @@ const Index = () => {
          onCandidate(candidate)
       })
 
-      socket.on('offer', (id, description, name, mode) => {
+      socket.on('calling', (name, callerId, mode) => {
          if (mode === 'video-call') {
             setMode({
                mode: 'incoming-video-call',
                name: name,
+               callerId: callerId,
             })
          } else {
             setMode({
                mode: 'incoming-audio-call',
                name: name,
+               callerId: callerId,
             })
          }
-         onOffer(id, description)
+      })
+
+      socket.on('offer', (description) => {
+         onOffer(description)
+      })
+
+      socket.on('ready', () => {
+         onReady()
       })
 
       socket.on('answer', async (answer) => {

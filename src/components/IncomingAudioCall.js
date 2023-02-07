@@ -5,7 +5,7 @@ import {
    accept,
    decline,
    endCall2,
-   initCam,
+   getReady,
    offCam,
 } from '../methods/webRTCHandler'
 
@@ -20,9 +20,10 @@ const IncomingAudioCall = ({ caller }) => {
    }
 
    useEffect(() => {
-      initCam('audio')
+      getReady('audio-call', caller.callerId)
       document.getElementById('sidebar').style.opacity = '0.50'
       document.getElementById('sidebar').style.pointerEvents = 'none'
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [])
 
    const acceptCall = () => {

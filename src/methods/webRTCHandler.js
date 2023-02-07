@@ -10,9 +10,12 @@ import {
    onEndCallDialogByCaller,
    onRejectDialog,
    rejectDialog,
+   showAcceptDialog,
+   showCallDialog,
 } from './dialog'
 
 let socket = null
+const audio = new Audio('./audio/ring.mp3')
 
 const setSocket = (value) => {
    socket = value
@@ -24,19 +27,35 @@ let remoteVideo
 const configuration = {
    iceServers: [
       {
-         urls: 'stun:stun.l.google.com:13902',
+         urls: 'stun:relay.metered.ca:80',
+      },
+      {
+         urls: 'turn:relay.metered.ca:80',
+         username: 'daa03d9d508852f8e784f910',
+         credential: 'NlLw12jY0Ps4w5Z6',
+      },
+      {
+         urls: 'turn:relay.metered.ca:443',
+         username: 'daa03d9d508852f8e784f910',
+         credential: 'NlLw12jY0Ps4w5Z6',
+      },
+      {
+         urls: 'turn:relay.metered.ca:443?transport=tcp',
+         username: 'daa03d9d508852f8e784f910',
+         credential: 'NlLw12jY0Ps4w5Z6',
       },
    ],
+   sdpSemantics: 'unified-plan',
 }
 
-let peerConnection
-let otherCandidate
+let peerConnection = null
 
 let idToSend = null
-let callerID
-let commingDescription
 
-let localStream
+let callerID = null
+let calleeID = null
+
+let localStream = null
 
 const initCam = async (mode) => {
    localVideo = document.getElementById('local')
@@ -44,7 +63,7 @@ const initCam = async (mode) => {
 
    let defaultConstraints
 
-   if (mode === 'video') {
+   if (mode === 'video-call') {
       defaultConstraints = {
          audio: true,
          video: true,
@@ -60,8 +79,7 @@ const initCam = async (mode) => {
       .getUserMedia(defaultConstraints)
       .then((stream) => {
          localStream = stream
-
-         localVideo.srcObject = localStream
+         localVideo.srcObject = stream
       })
       .catch((error) => console.error(error))
 }
@@ -71,59 +89,100 @@ const startConnection = () => {
 
    peerConnection.onicecandidate = (event) => {
       if (event.candidate && idToSend !== null) {
-         socket.emit('send-candidate', idToSend, event.candidate)
+         const candidate = {
+            type: 'candidate',
+            label: event.candidate.sdpMLineIndex,
+            id: event.candidate.sdpMid,
+            candidate: event.candidate.candidate,
+         }
+         socket.emit('send-candidate', idToSend, candidate)
       }
    }
 
-   peerConnection.ontrack = (event) => {
-      remoteVideo.srcObject = event.streams[0]
+   peerConnection.onaddstream = (event) => {
+      remoteVideo.srcObject = event.stream
    }
 
-   for (const track of localStream.getTracks()) {
-      peerConnection.addTrack(track, localStream)
-   }
+   peerConnection.addStream(localStream)
 }
 
-const calleer = async (id, name, mode) => {
-   startConnection()
-   idToSend = id
-   const offer = await peerConnection.createOffer()
-   await peerConnection.setLocalDescription(offer)
-   socket.emit('send-offer', socket.id, id, offer, name, mode)
+const getStart = async (email, myEmail, mode) => {
+   await initCam(mode)
+   socket.emit('get-id', email, (resId) => {
+      if (resId) {
+         calleeID = resId
+         idToSend = resId
+         socket.emit('get-start', myEmail, resId, socket.id, mode)
+      } else {
+         onCallNotAvailableDialog()
+      }
+   })
 }
 
-const callee = async (id, description) => {
-   startConnection()
-   idToSend = id
-   await peerConnection.setRemoteDescription(description)
-   const answer = await peerConnection.createAnswer()
-   await peerConnection.setLocalDescription(answer)
-   socket.emit('send-answer', id, answer)
-   await peerConnection.addIceCandidate(otherCandidate, success, fail)
-}
-
-const onOffer = (id, description) => {
+const getReady = async (mode, id) => {
+   await initCam(mode)
    callerID = id
-   commingDescription = description
+   idToSend = id
+   socket.emit('is-ready', id)
 }
 
-const onAnswer = async (answer) => {
-   await peerConnection.setRemoteDescription(answer)
-   await peerConnection.addIceCandidate(otherCandidate, success, fail)
+const onReady = () => {
+   startConnection()
+   showCallDialog()
+   let offerOptions = {
+      offerToReceiveAudio: 1,
+   }
+   peerConnection
+      .createOffer(offerOptions)
+      .then((offer) => {
+         peerConnection.setLocalDescription(offer)
+         socket.emit('send-offer', calleeID, offer)
+      })
+      .catch((e) => console.log(e))
+}
+
+const onOffer = (description) => {
+   audio.play()
+   startConnection()
+   showAcceptDialog()
+   peerConnection.setRemoteDescription(new RTCSessionDescription(description))
+}
+
+const accept = () => {
+   audio.pause()
+   peerConnection
+      .createAnswer()
+      .then((answer) => {
+         peerConnection.setLocalDescription(answer)
+         socket.emit('send-answer', callerID, answer)
+      })
+      .catch((e) => console.log(e))
+   acceptDialog()
+}
+
+const onAnswer = (answer) => {
+   peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
    onAnswerDialog()
 }
 
-const onCandidate = (candidate) => {
-   otherCandidate = candidate
+const onCandidate = (candidates) => {
+   if (peerConnection) {
+      const candidate = new RTCIceCandidate({
+         sdpMLineIndex: candidates.label,
+         candidate: candidates.candidate,
+      })
+      peerConnection.addIceCandidate(candidate)
+   }
 }
 
 const close = () => {
    peerConnection.close()
+   peerConnection = null
    callerID = null
+   calleeID = null
    idToSend = null
-   commingDescription = null
-   localVideo.src = ''
-   remoteVideo.src = ''
+   localVideo.src = null
+   remoteVideo.src = null
    offCam()
 }
 
@@ -151,43 +210,21 @@ const offCam = () => {
    localStream.getVideoTracks().forEach((track) => track.stop())
 }
 
-const success = () => {
-   console.log('candidate came and successfuly added as your ice candidate')
-}
-
-const fail = () => {
-   console.log('candidate came but fail to add as our ice candidate')
-}
-
-const call = (id, name, mode) => {
-   socket.emit('get-id', id, (resId) => {
-      if (resId) {
-         calleer(resId, name, mode)
-      } else {
-         onCallNotAvailableDialog()
-      }
-   })
-}
-
-const accept = () => {
-   callee(callerID, commingDescription)
-   acceptDialog()
-}
-
 const decline = () => {
+   audio.pause()
    socket.emit('reject-call', callerID)
    close()
    rejectDialog()
 }
 
 const abort = () => {
-   socket.emit('abort-call', idToSend)
+   socket.emit('abort-call', calleeID)
    close()
    abortDialog()
 }
 
 const endCall1 = () => {
-   socket.emit('end-call', idToSend)
+   socket.emit('end-call', calleeID)
    callend1()
    onClose()
 }
@@ -200,9 +237,10 @@ const endCall2 = () => {
 
 export {
    setSocket,
-   initCam,
+   getStart,
+   getReady,
+   onReady,
    offCam,
-   call,
    accept,
    decline,
    abort,

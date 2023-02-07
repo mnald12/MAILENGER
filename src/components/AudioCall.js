@@ -1,13 +1,7 @@
 import { useContext, useEffect } from 'react'
 import { Data } from './Index'
 import Avatar from 'react-avatar'
-import {
-   call,
-   abort,
-   endCall1,
-   offCam,
-   initCam,
-} from '../methods/webRTCHandler'
+import { abort, endCall1, offCam, getStart } from '../methods/webRTCHandler'
 
 const AudioCall = ({ vData }) => {
    const { data, current, setMode } = useContext(Data)
@@ -19,17 +13,16 @@ const AudioCall = ({ vData }) => {
       offCam()
    }
 
-   // eslint-disable-next-line react-hooks/exhaustive-deps
-   const startCall = async () => {
-      await initCam('audio')
-      call(vData.email, data.email, 'audio-call')
+   const startCall = () => {
+      getStart(vData.email, data.email, 'audio-call')
    }
 
    useEffect(() => {
       startCall()
       document.getElementById('sidebar').style.opacity = '0.50'
       document.getElementById('sidebar').style.pointerEvents = 'none'
-   }, [startCall])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [])
 
    const callended = () => {
       document.getElementById('dialog3').style.transform = 'translateY(400px)'

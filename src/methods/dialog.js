@@ -1,6 +1,14 @@
 const show = 'translateY(0)'
 const hide = 'translateY(400px)'
 
+const showCallDialog = () => {
+   document.getElementById('dialog1').style.transform = show
+}
+
+const showAcceptDialog = () => {
+   document.getElementById('dialog6').style.transform = show
+}
+
 const acceptDialog = () => {
    document.getElementById('dialog6').style.transform = hide
    document.getElementById('dialog9').style.transform = show
@@ -57,6 +65,8 @@ const onCallAbortedDialog = () => {
 }
 
 export {
+   showCallDialog,
+   showAcceptDialog,
    acceptDialog,
    rejectDialog,
    abortDialog,

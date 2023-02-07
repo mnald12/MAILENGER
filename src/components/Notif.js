@@ -6,13 +6,17 @@ const Notif = ({ notification }) => {
    const { setNotifs } = useContext(Data)
    useEffect(() => {
       if (notification) {
-         document.getElementById('notif').style.height = '40px'
+         document.getElementById('notif').style.top = '30px'
       }
 
-      setTimeout(() => {
-         document.getElementById('notif').style.height = '0'
+      const notify = setTimeout(() => {
+         document.getElementById('notif').style.top = '-100px'
          setNotifs(null)
-      }, 3000)
+      }, 5000)
+
+      return () => {
+         clearTimeout(notify)
+      }
    }, [notification, setNotifs])
    return (
       <div className="notif" id="notif">

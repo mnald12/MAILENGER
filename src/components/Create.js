@@ -5,14 +5,50 @@ import sendEmail from '../methods/sendEmail'
 import { Data } from './Index'
 
 const Create = () => {
-   const { data } = useContext(Data)
+   const { data, setNotifs } = useContext(Data)
 
    const [to, setTo] = useState('')
    const [subject, setSubject] = useState('')
    const [key, setKey] = useState(1)
    const editorRef = useRef(null)
 
+   const checkEmail = (emailAddress) => {
+      const sQtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]'
+      const sDtext = '[^\\x0d\\x5b-\\x5d\\x80-\\xff]'
+      const sAtom =
+         '[^\\x00-\\x20\\x22\\x28\\x29\\x2c\\x2e\\x3a-\\x3c\\x3e\\x40\\x5b-\\x5d\\x7f-\\xff]+'
+      const sQuotedPair = '\\x5c[\\x00-\\x7f]'
+      const sDomainLiteral = '\\x5b(' + sDtext + '|' + sQuotedPair + ')*\\x5d'
+      const sQuotedString = '\\x22(' + sQtext + '|' + sQuotedPair + ')*\\x22'
+      const sDomain_ref = sAtom
+      const sSubDomain = '(' + sDomain_ref + '|' + sDomainLiteral + ')'
+      const sWord = '(' + sAtom + '|' + sQuotedString + ')'
+      const sDomain = sSubDomain + '(\\x2e' + sSubDomain + ')*'
+      const sLocalPart = sWord + '(\\x2e' + sWord + ')*'
+      const sAddrSpec = sLocalPart + '\\x40' + sDomain
+      const sValidEmail = '^' + sAddrSpec + '$'
+
+      const reValidEmail = new RegExp(sValidEmail)
+
+      return reValidEmail.test(emailAddress)
+   }
+
    const send = () => {
+      if (to === '') {
+         setNotifs('please add a recipient')
+         return
+      }
+
+      if (checkEmail(to) === false) {
+         setNotifs(`${to} is not a correct email`)
+         return
+      }
+
+      if (editorRef.current.getContent() === '') {
+         setNotifs('please add a message')
+         return
+      }
+
       const res = sendEmail({
          host: data.smtpHost,
          port: data.smtpPort,
@@ -28,6 +64,7 @@ const Create = () => {
          setKey(key + 1)
          setTo('')
          setSubject('')
+         setNotifs('email sent successfully!')
       }
    }
 
@@ -36,6 +73,7 @@ const Create = () => {
          <div className="create-form">
             <input
                type="email"
+               required
                value={to}
                onChange={(e) => setTo(e.target.value)}
                placeholder="To: "
